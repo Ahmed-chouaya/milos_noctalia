@@ -37,6 +37,7 @@
           ./modules/system/users.nix
           ./modules/system/security.nix
           ./modules/system/ssh.nix
+          ./modules/system/hardware.nix
 
           # Desktop environment
           ./modules/desktop/niri.nix

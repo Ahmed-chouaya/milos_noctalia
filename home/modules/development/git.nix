@@ -7,14 +7,23 @@
     userName = "Ahmed-chouaya";
     userEmail = "chouaya.ahmed83@gmail.com";
 
-    # TODO: Extract aliases from ~/.gitconfig
     aliases = {
+      st = "status";
+      co = "checkout";
+      br = "branch";
+      ci = "commit";
+      lg = "log --oneline --graph --decorate";
     };
 
-    # TODO: Extract additional config
     extraConfig = {
       core = {
-        # editor = "nvim";
+        editor = "nvim";
+      };
+      init = {
+        defaultBranch = "main";
+      };
+      pull = {
+        rebase = false;
       };
     };
   };

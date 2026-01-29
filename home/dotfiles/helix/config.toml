@@ -1,0 +1,33 @@
+# Helix Editor Configuration
+# See: https://docs.helix-editor.com/configuration.html
+
+theme = "noctalia"
+
+[editor]
+line-number = "relative"
+mouse = true
+cursorline = true
+auto-save = false
+idle-timeout = 400
+completion-trigger-len = 2
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type"]
+separator = "│"
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+
+[editor.indent-guides]
+render = true
