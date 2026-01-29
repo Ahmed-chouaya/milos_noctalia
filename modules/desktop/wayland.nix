@@ -11,21 +11,11 @@
   environment.systemPackages = with pkgs; [
     # Wayland protocols and libraries
     kdePackages.wayland-protocols
-    libinput
-    libdrm
     libxkbcommon
-    pixman
-
-    # Build tools (may be needed for some packages)
-    meson
-    ninja
 
     # Wayland-specific libraries
     libdisplay-info
     libliftoff
     hwdata
-    seatd
-    pcre2
-    glibc
   ];
 }

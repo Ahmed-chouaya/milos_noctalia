@@ -7,9 +7,8 @@
   # Enable NetworkManager for network management
   networking.networkmanager.enable = true;
 
-  # Firewall configuration
+  # Enable firewall
+  networking.firewall.enable = true;
   # networking.firewall.allowedTCPPorts = [ ];
   # networking.firewall.allowedUDPPorts = [ ];
-  # Or disable the firewall altogether:
-  # networking.firewall.enable = false;
 }
