@@ -4,6 +4,12 @@ result-*
 
 # Nix build artifacts
 *.qcow2
+*.qcow2.info
+*.log
+
+# Nix development tools
+.direnv/
+.devenv/
 
 # Secrets (if added later)
 secrets/
@@ -16,6 +22,9 @@ secrets/
 *.swp
 *.swo
 *~
+tags
+TAGS
+*.orig
 
 # OS files
 .DS_Store
