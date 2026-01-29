@@ -5,11 +5,7 @@
     inputs.niri.homeModules.config
   ];
 
-  programs.niri = {
-    settings = {
-      # TODO: Extract and convert from ~/.config/niri/config.kdl
-      # This requires manual conversion from KDL to Nix attributes
-      # Reference: https://github.com/sodiboo/niri-flake
-    };
-  };
+  # Copy niri configuration files from dotfiles
+  home.file.".config/niri/config.kdl".source = ../dotfiles/niri/config.kdl;
+  home.file.".config/niri/noctalia.kdl".source = ../dotfiles/niri/noctalia.kdl;
 }

@@ -4,9 +4,8 @@
   programs.git = {
     enable = true;
 
-    # TODO: Extract from ~/.gitconfig (Task 31)
-    userName = "Your Name";  # PLACEHOLDER
-    userEmail = "your@email.com";  # PLACEHOLDER
+    userName = "Ahmed-chouaya";
+    userEmail = "chouaya.ahmed83@gmail.com";
 
     # TODO: Extract aliases from ~/.gitconfig
     aliases = {

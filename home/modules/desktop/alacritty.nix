@@ -4,9 +4,29 @@
   programs.alacritty = {
     enable = true;
 
-    # Settings (to be populated in Task 31)
+    # Basic configuration - no existing config found, using defaults
+    # Customize as needed
     settings = {
-      # TODO: Extract from ~/.config/alacritty/alacritty.toml
+      env.TERM = "xterm-256color";
+
+      window = {
+        padding = {
+          x = 10;
+          y = 10;
+        };
+        opacity = 0.95;
+      };
+
+      font = {
+        size = 11.0;
+      };
+
+      cursor.style = {
+        shape = "Block";
+        blinking = "On";
+      };
+
+      scrolling.history = 10000;
     };
   };
 }

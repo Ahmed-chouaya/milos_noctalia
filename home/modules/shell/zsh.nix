@@ -13,14 +13,17 @@
       path = "${config.home.homeDirectory}/.zsh_history";
     };
 
-    # Shell aliases (to be populated in Task 31)
+    # Shell aliases - add your custom aliases here
     shellAliases = {
-      # TODO: Extract from ~/.zshrc
+      ll = "ls -alh";
+      la = "ls -A";
+      l = "ls -CF";
+      ".." = "cd ..";
     };
 
     # Additional init commands
-    initContent = ''
-      # User can add custom zsh configuration here
+    initExtra = ''
+      # Add custom zsh configuration here
     '';
   };
 }

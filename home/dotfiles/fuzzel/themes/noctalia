@@ -1,0 +1,15 @@
+# Fuzzel Colors
+# Generated with Template Processor
+
+[colors]
+background=171112CC
+text=ede0e0ff
+prompt=e8bdc2ff
+placeholder=e2c2a0ff
+input=ffb3bfff
+match=e2c2a0ff
+selection=ffb3bf80
+selection-text=ede0e0ff
+selection-match=551e29ff
+counter=e8bdc2ff
+border=ffb3bfff
