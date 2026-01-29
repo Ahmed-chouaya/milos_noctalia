@@ -1,0 +1,22 @@
+# Build results
+result
+result-*
+
+# Nix build artifacts
+*.qcow2
+
+# Secrets (if added later)
+secrets/
+*.key
+*.pem
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
