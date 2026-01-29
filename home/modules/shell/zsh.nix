@@ -18,9 +18,9 @@
       # TODO: Extract from ~/.zshrc
     };
 
-    # Additional init commands (to be populated in Task 31)
-    initExtra = ''
-      # TODO: Extract custom zsh configuration from ~/.zshrc
+    # Additional init commands
+    initContent = ''
+      # User can add custom zsh configuration here
     '';
   };
 }
