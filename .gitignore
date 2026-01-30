@@ -16,8 +16,6 @@ secrets/
 *.key
 *.pem
 
-# Hardware configuration (system-specific)
-hosts/*/hardware-configuration.nix
 
 # Editor files
 .vscode/
