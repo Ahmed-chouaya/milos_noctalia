@@ -22,7 +22,7 @@
     };
 
     # Additional init commands
-    initExtra = ''
+    initContent = ''
       # Add custom zsh configuration here
     '';
   };

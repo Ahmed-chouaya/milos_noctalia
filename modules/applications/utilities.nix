@@ -29,9 +29,9 @@
     cliphist      # Clipboard manager with history
 
     # File management
-    xfce.thunar           # Lightweight file manager
-    xfce.thunar-volman    # Volume management for thunar
-    xfce.thunar-archive-plugin  # Archive support
+    thunar           # Lightweight file manager
+    thunar-volman    # Volume management for thunar
+    thunar-archive-plugin  # Archive support
     file-roller           # Archive manager
 
     # System monitoring
