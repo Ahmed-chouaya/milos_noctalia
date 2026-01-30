@@ -4,8 +4,8 @@
   programs.alacritty = {
     enable = true;
 
-    # Basic configuration - no existing config found, using defaults
-    # Customize as needed
+    # Force overwrite existing config file to prevent conflicts
+    # This handles cases where alacritty.toml was created outside Home Manager
     settings = {
       env.TERM = "xterm-256color";
 
