@@ -20,7 +20,7 @@
         default = [ "gtk" ];
       };
       niri = {
-        default = lib.mkForce [ "wlr" "gtk" ];
+        default = pkgs.lib.mkForce [ "wlr" "gtk" ];
         "org.freedesktop.impl.portal.ScreenCast" = [ "wlr" ];
         "org.freedesktop.impl.portal.Screenshot" = [ "wlr" ];
       };
