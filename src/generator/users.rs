@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "users.nix")]
+#[template(path = "users.nix", escape = "none")]
 struct UsersContext {
     username: String,
     full_name: String,

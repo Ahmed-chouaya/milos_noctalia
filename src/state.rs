@@ -111,6 +111,7 @@ impl WizardState {
             error_mode: None,
             focused_field: None,
             focused_field_index: 0,
+            validation_error: None,
             hostname: None,
             username: None,
             full_name: None,
@@ -379,6 +380,17 @@ impl WizardState {
 impl Default for WizardState {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/// Implement StepData for WizardState to allow dynamic dispatch
+impl StepData for WizardState {
+    fn is_complete(&self) -> bool {
+        self.is_complete()
+    }
+
+    fn validate(&self) -> Result<(), String> {
+        Ok(())
     }
 }
 

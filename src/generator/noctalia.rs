@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "noctalia.nix")]
+#[template(path = "noctalia.nix", escape = "none")]
 struct NoctaliaContext {
     wallpaper_dir: String,
     avatar_path: Option<String>,
@@ -47,5 +47,9 @@ impl Generator for NoctaliaGenerator {
 
     fn output_base_path(&self, _config: &UserConfig) -> PathBuf {
         PathBuf::from("modules")
+    }
+
+    fn template_name(&self) -> &'static str {
+        "noctalia.nix"
     }
 }

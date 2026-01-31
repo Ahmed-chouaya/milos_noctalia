@@ -3,6 +3,9 @@ name = "milos_niri"
 version = "0.1.0"
 edition = "2021"
 
+# Include templates in crate for Askama
+include = ["src/generator/templates/**/*"]
+
 [dependencies]
 ratatui = "0.30.0"
 crossterm = "0.29.0"

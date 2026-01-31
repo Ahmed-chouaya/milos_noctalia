@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "nix.conf")]
+#[template(path = "nix.conf", escape = "none")]
 struct NixConfContext {
     hostname: String,
     username: String,
@@ -47,5 +47,9 @@ impl Generator for NixConfGenerator {
 
     fn output_base_path(&self, _config: &UserConfig) -> PathBuf {
         PathBuf::from(".")
+    }
+
+    fn template_name(&self) -> &'static str {
+        "nix.conf"
     }
 }

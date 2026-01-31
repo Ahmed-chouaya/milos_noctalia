@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "niri/config.kdl")]
+#[template(path = "niri/config.kdl", escape = "none")]
 struct NiriContext {
     username: String,
     screenshot_dir: String,
@@ -47,5 +47,9 @@ impl Generator for NiriGenerator {
 
     fn output_base_path(&self, _config: &UserConfig) -> PathBuf {
         PathBuf::from("niri")
+    }
+
+    fn template_name(&self) -> &'static str {
+        "niri/config.kdl"
     }
 }

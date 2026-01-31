@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "locale.nix")]
+#[template(path = "locale.nix", escape = "none")]
 struct LocaleContext {
     timezone: String,
     keyboard_layout: String,
@@ -47,5 +47,9 @@ impl Generator for LocaleGenerator {
 
     fn output_base_path(&self, _config: &UserConfig) -> PathBuf {
         PathBuf::from("modules")
+    }
+
+    fn template_name(&self) -> &'static str {
+        "locale.nix"
     }
 }

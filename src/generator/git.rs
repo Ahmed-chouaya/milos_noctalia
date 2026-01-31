@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "git.nix")]
+#[template(path = "git.nix", escape = "none")]
 struct GitContext {
     full_name: String,
     git_email: String,

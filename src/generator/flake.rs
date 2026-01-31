@@ -10,7 +10,7 @@ use crate::generator::context::UserConfig;
 use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
-#[template(path = "flake.nix")]
+#[template(path = "flake.nix", escape = "none")]
 struct FlakeContext {
     hostname: String,
     username: String,
