@@ -7,11 +7,6 @@
 
   programs.noctalia-shell = {
     enable = true;
-
-    # Enable systemd service
-    systemd.enable = true;
-
-    # Full configuration from "Copy Settings" feature
     settings = {
       settingsVersion = 41;
 
@@ -674,6 +669,23 @@
           }
         ];
       };
+    };
+  };
+
+  systemd.user.services.noctalia-shell = {
+    Unit = {
+      Description = "Noctalia Shell - Wayland Desktop Environment";
+      PartOf = ["graphical-session.target"];
+      After = ["graphical-session.target"];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.noctalia-shell}/bin/noctalia-shell";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+    Install = {
+      WantedBy = ["graphical-session.target"];
     };
   };
 }

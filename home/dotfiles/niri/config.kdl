@@ -8,7 +8,7 @@
 // https://yalter.github.io/niri/Configuration:-Input
 prefer-no-csd
 
-spawn-at-startup "noctalia-shell"
+// spawn-at-startup "noctalia-shell" // Now handled by systemd user service
 
 cursor {
     xcursor-theme "phinger-cursors"
