@@ -4,6 +4,14 @@
 //! This module provides the infrastructure for rendering and writing
 //! NixOS configuration files based on the user's collected input.
 
+use self::flake::FlakeGenerator;
+use self::users::UsersGenerator;
+use self::git::GitGenerator;
+use self::locale::LocaleGenerator;
+use self::noctalia::NoctaliaGenerator;
+use self::niri::NiriGenerator;
+use self::nixconf::NixConfGenerator;
+
 pub mod flake;
 pub mod users;
 pub mod git;
@@ -15,8 +23,20 @@ pub mod nixconf;
 pub mod validate;
 pub mod write;
 
+pub use self::validate::validate_no_unsubstituted;
+pub use self::write::write_config_atomically;
+use self::validate::validate_no_unsubstituted;
+
 pub use self::error::GeneratorError;
 pub use self::context::UserConfig;
+
+pub use self::flake::FlakeGenerator;
+pub use self::users::UsersGenerator;
+pub use self::git::GitGenerator;
+pub use self::locale::LocaleGenerator;
+pub use self::noctalia::NoctaliaGenerator;
+pub use self::niri::NiriGenerator;
+pub use self::nixconf::NixConfGenerator;
 
 /// Represents a generated file with its path and content.
 #[derive(Debug, Clone)]
@@ -51,4 +71,109 @@ pub trait Generator {
     /// # Returns
     /// The base `PathBuf` where generated files should be written.
     fn output_base_path(&self, config: &UserConfig) -> std::path::PathBuf;
+
+    /// Get the template name for validation error messages.
+    ///
+    /// # Returns
+    /// A static string representing the template name (e.g., "flake.nix").
+    fn template_name(&self) -> &'static str;
+
+    /// Validate generated content for unsubstituted placeholders.
+    ///
+    /// Default implementation uses validate_no_unsubstituted with the
+    /// template name returned by template_name().
+    ///
+    /// # Arguments
+    /// * `content` - The generated content to validate.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if no unsubstituted placeholders remain.
+    fn validate(&self, content: &str) -> Result<(), GeneratorError> {
+        validate_no_unsubstituted(content, self.template_name())
+    }
+}
+
+/// Returns a vector of all available generators.
+///
+/// This function provides a convenient way to get all generator implementations
+/// for orchestration purposes. Each generator is boxed as a trait object to allow
+/// for heterogeneous collections.
+///
+/// # Returns
+/// A vector of boxed `Generator` trait objects representing all available generators.
+pub fn all_generators() -> Vec<Box<dyn Generator>> {
+    vec![
+        Box::new(FlakeGenerator),
+        Box::new(UsersGenerator),
+        Box::new(GitGenerator),
+        Box::new(LocaleGenerator),
+        Box::new(NoctaliaGenerator),
+        Box::new(NiriGenerator),
+        Box::new(NixConfGenerator),
+    ]
+}
+
+/// Generate all configuration files for the given user config.
+///
+/// This function orchestrates the generation of all configuration files by:
+/// 1. Creating an output directory
+/// 2. Iterating through all available generators
+/// 3. Rendering each generator's templates
+/// 4. Validating the generated content
+/// 5. Writing files atomically to the output directory
+///
+/// # Arguments
+/// * `config` - The user configuration to use for generation.
+/// * `output_dir` - The directory where generated files should be written.
+///
+/// # Returns
+/// A `Result` containing either a vector of generated file paths (relative to output_dir), or a `GeneratorError`
+/// if any step fails.
+pub fn generate_all(
+    config: &UserConfig,
+    output_dir: &std::path::Path,
+) -> Result<Vec<std::path::PathBuf>, GeneratorError> {
+    use std::path::PathBuf;
+
+    // Create output directory if it doesn't exist
+    std::fs::create_dir_all(output_dir)
+        .map_err(|e| GeneratorError::FileWrite {
+            path: output_dir.to_path_buf(),
+            source: e,
+        })?;
+
+    let mut generated_paths: Vec<std::path::PathBuf> = Vec::new();
+
+    // Generate and write each configuration
+    for generator in all_generators() {
+        let files = generator.generate(config)?;
+
+        for file in files {
+            // Validate the generated content
+            generator.validate(&file.content)?;
+
+            // Compute the full output path based on generator's output_base_path
+            let base_path = generator.output_base_path(config);
+            let output_path = if base_path == PathBuf::from(".") {
+                // Files that go to root directory
+                output_dir.join(&file.path)
+            } else {
+                // Files that go to subdirectories (modules/, niri/)
+                output_dir.join(&base_path).join(&file.path)
+            };
+
+            // Write the file atomically
+            write::write_config_atomically(&output_path, &file.content)
+                .map_err(|e| GeneratorError::FileWrite {
+                    path: output_path.clone(),
+                    source: e,
+                })?;
+
+            // Record the relative path from output_dir
+            let relative_path = output_path.strip_prefix(output_dir)?.to_path_buf();
+            generated_paths.push(relative_path);
+        }
+    }
+
+    Ok(generated_paths)
 }

@@ -1,4 +1,5 @@
 use std::io::Stdout;
+use std::path::PathBuf;
 use std::time::Instant;
 use ratatui::{
     backend::CrosstermBackend,
@@ -16,6 +17,7 @@ use crate::state::{WizardState, Step, SharedState};
 use crate::event::{Event, EventHandler, run_event_loop};
 use crate::logo::{LogoAnimation, render_logo};
 use crate::error::{ErrorModal, render_error_modal};
+use crate::generator::{self, UserConfig};
 
 /// Trait for wizard steps - each step implements this
 pub trait WizardStep {
@@ -804,6 +806,202 @@ impl WizardStep for PathsStep {
     }
 }
 
+/// Generation status for tracking progress
+#[derive(Clone, Debug, PartialEq)]
+pub enum GenerationStatus {
+    Pending,
+    Generating,
+    Success,
+    Error,
+}
+
+/// Generate step - generates configuration files and displays results
+pub struct GenerateStep {
+    /// Current state of generation
+    pub status: GenerationStatus,
+    /// Generated file paths
+    pub generated_files: Vec<PathBuf>,
+    /// Any error that occurred
+    pub error: Option<String>,
+}
+
+impl GenerateStep {
+    pub fn new() -> Self {
+        Self {
+            status: GenerationStatus::Pending,
+            generated_files: Vec::new(),
+            error: None,
+        }
+    }
+
+    /// Generate configuration files
+    pub fn generate(&mut self, state: &WizardState) {
+        self.status = GenerationStatus::Generating;
+        self.error = None;
+
+        // Convert WizardState to UserConfig
+        let config = UserConfig::from_wizard_state(state);
+
+        // Create output directory
+        let output_dir = PathBuf::from("milos-output");
+
+        // Generate all configs
+        match generator::generate_all(&config, &output_dir) {
+            Ok(files) => {
+                self.generated_files = files;
+                self.status = GenerationStatus::Success;
+            }
+            Err(e) => {
+                self.error = Some(e.to_string());
+                self.status = GenerationStatus::Error;
+            }
+        }
+    }
+}
+
+impl WizardStep for GenerateStep {
+    fn title(&self) -> &'static str {
+        "Generate Configuration"
+    }
+
+    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+        match self.status {
+            GenerationStatus::Pending => {
+                let hostname = state.hostname.as_deref().unwrap_or("(not set)");
+                let username = state.username.as_deref().unwrap_or("(not set)");
+
+                let text = vec![
+                    "Generate your NixOS configuration:",
+                    "",
+                    &format!("  Hostname:  {}", hostname),
+                    &format!("  Username:  {}", username),
+                    "",
+                    "The following files will be generated:",
+                    "  • flake.nix (NixOS flake configuration)",
+                    "  • users.nix (User account configuration)",
+                    "  • git.nix (Git configuration)",
+                    "  • locale.nix (Locale settings)",
+                    "  • noctalia.nix (Noctalia shell config)",
+                    "  • niri/config.kdl (Niri compositor config)",
+                    "  • nix.conf (Nix configuration)",
+                    "",
+                    "Press ENTER to generate configuration files.",
+                    "Press ESC to go back.",
+                ];
+
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::White))
+                    .block(Block::borders().title("Generate Configuration"));
+
+                frame.render_widget(paragraph, area);
+            }
+            GenerationStatus::Generating => {
+                let text = vec![
+                    "Generating configuration files...",
+                    "",
+                    "Please wait while your NixOS configuration is being generated.",
+                    "",
+                    "This may take a moment...",
+                ];
+
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Yellow))
+                    .block(Block::borders().title("Generating..."));
+
+                frame.render_widget(paragraph, area);
+            }
+            GenerationStatus::Success => {
+                let file_count = self.generated_files.len();
+
+                let file_list: Vec<String> = self.generated_files
+                    .iter()
+                    .map(|p| format!("  • {}", p.display()))
+                    .collect();
+
+                let text = vec![
+                    "✓ Configuration generated successfully!",
+                    "",
+                    &format!("Generated {} files:", file_count),
+                    "",
+                    &file_list.join("\n"),
+                    "",
+                    "Your NixOS configuration is ready in the 'milos-output' directory.",
+                    "",
+                    "Press ENTER to continue.",
+                ];
+
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Green))
+                    .block(Block::borders().title("Success"));
+
+                frame.render_widget(paragraph, area);
+            }
+            GenerationStatus::Error => {
+                let error_msg = self.error.as_deref().unwrap_or("Unknown error");
+
+                let text = vec![
+                    "✗ Error generating configuration",
+                    "",
+                    &format!("Error: {}", error_msg),
+                    "",
+                    "Press ENTER to retry.",
+                    "Press ESC to go back.",
+                ];
+
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Red))
+                    .block(Block::borders().title("Error"));
+
+                frame.render_widget(paragraph, area);
+            }
+        }
+    }
+
+    fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
+        if let Event::Key(key) = event {
+            match key.code {
+                crossterm::event::KeyCode::Enter => {
+                    match self.status {
+                        GenerationStatus::Pending => {
+                            // Start generation
+                            self.generate(state);
+                        }
+                        GenerationStatus::Success => {
+                            // Mark step complete and proceed
+                            state.mark_step_complete();
+                        }
+                        GenerationStatus::Error => {
+                            // Retry generation
+                            self.generate(state);
+                        }
+                        GenerationStatus::Generating => {
+                            // Ignore during generation
+                        }
+                    }
+                }
+                crossterm::event::KeyCode::Esc => {
+                    // Go back
+                    state.go_back();
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    fn validate(&self, _state: &WizardState) -> Result<(), String> {
+        match self.status {
+            GenerationStatus::Success => Ok(()),
+            GenerationStatus::Error => Ok(()), // Allow retry
+            _ => Err("Generation not complete".to_string()),
+        }
+    }
+
+    fn is_complete(&self, state: &WizardState) -> bool {
+        self.status == GenerationStatus::Success && state.is_current_step_complete()
+    }
+}
+
 /// Summary step - review before install
 pub struct SummaryStep;
 
@@ -841,7 +1039,7 @@ impl WizardStep for SummaryStep {
         if let Event::Key(key) = event {
             if key.code == crossterm::event::KeyCode::Enter {
                 state.mark_step_complete();
-                // Installation would happen here in Phase 4
+                state.go_next()?;
             }
         }
         Ok(())
@@ -902,6 +1100,7 @@ pub fn create_current_step(step: Step) -> Box<dyn WizardStep> {
         Step::Account => Box::new(AccountStep::new()),
         Step::Paths => Box::new(PathsStep::new()),
         Step::Summary => Box::new(SummaryStep),
+        Step::Generate => Box::new(GenerateStep::new()),
     }
 }
 
