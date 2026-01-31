@@ -123,10 +123,10 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 
 **Plans:**
 - [x] 04-01-PLAN.md — Executor infrastructure: command execution with streaming output ✓
-- [ ] 04-02-PLAN.md — Git integration: init, stage, commit generated configs
-- [ ] 04-03-PLAN.md — NixOS rebuild: nixos-rebuild switch --flake execution
-- [ ] 04-04-PLAN.md — Progress UI: real-time output display and error handling
-- [ ] 04-05-PLAN.md — Rollback & completion: failure recovery and success screen
+- [x] 04-02-PLAN.md — Git integration: init, stage, commit generated configs ✓
+- [x] 04-03-PLAN.md — NixOS rebuild: nixos-rebuild switch --flake execution ✓
+- [x] 04-04-PLAN.md — Progress UI: real-time output display and error handling ✓
+- [x] 04-05-PLAN.md — Rollback & completion: failure recovery and success screen ✓
 
 **Success Criteria:**
 
