@@ -12,6 +12,7 @@ pub enum Step {
     Account,
     Paths,
     Summary,
+    Generate,  // NEW: Configuration generation step
 }
 
 impl Step {
@@ -24,6 +25,7 @@ impl Step {
             Step::Account => "Account",
             Step::Paths => "Paths",
             Step::Summary => "Review",
+            Step::Generate => "Generate Configuration",
         }
     }
 
@@ -36,6 +38,7 @@ impl Step {
             Step::Account => 3,
             Step::Paths => 4,
             Step::Summary => 5,
+            Step::Generate => 6,
         }
     }
 
@@ -48,6 +51,7 @@ impl Step {
             Step::Account,
             Step::Paths,
             Step::Summary,
+            Step::Generate,
         ]
     }
 }
