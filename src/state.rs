@@ -132,7 +132,7 @@ impl WizardState {
 
     /// Get the current step
     pub fn current_step(&self) -> Step {
-        Step::all_steps()[self.current_step]
+        Step::all_steps()[self.current_step].clone()
     }
 
     /// Get current step mutably (for data collection)

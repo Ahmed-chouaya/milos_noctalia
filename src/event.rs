@@ -65,6 +65,7 @@ impl EventHandler {
             CrosstermEvent::Key(key_event) => Some(Event::Key(key_event)),
             CrosstermEvent::Resize(width, height) => Some(Event::Resize(width, height)),
             CrosstermEvent::Paste(_) => None, // Not handling paste for now
+            CrosstermEvent::FocusGained | CrosstermEvent::FocusLost | CrosstermEvent::Mouse(_) => None,
         }
     }
 

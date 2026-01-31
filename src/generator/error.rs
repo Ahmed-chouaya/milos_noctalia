@@ -30,10 +30,48 @@ pub enum GeneratorError {
     },
 
     /// A template placeholder was not substituted.
-    #[error("Unsubstituted placeholder in template '{0}': {1}")]
-    UnsubstitutedPlaceholder(&'static str, String),
+    #[error("Unsubstituted placeholder in template '{template}': {placeholders}")]
+    UnsubstitutedPlaceholders {
+        /// The template name.
+        template: String,
+        /// The unsubstituted placeholders found.
+        placeholders: String,
+    },
+
+    /// Nix syntax validation failed.
+    #[error("Nix syntax error: {0}")]
+    NixSyntax(String),
+
+    /// Regex error during validation.
+    #[error("Regex error during validation: {0}")]
+    RegexError(String),
+
+    /// Strip prefix error when computing relative paths.
+    #[error("Path error: {0}")]
+    PathError(String),
 
     /// An unknown error occurred.
     #[error("Unknown error: {0}")]
     Unknown(String),
+}
+
+impl From<regex::Error> for GeneratorError {
+    fn from(e: regex::Error) -> Self {
+        GeneratorError::RegexError(e.to_string())
+    }
+}
+
+impl From<std::path::StripPrefixError> for GeneratorError {
+    fn from(e: std::path::StripPrefixError) -> Self {
+        GeneratorError::PathError(e.to_string())
+    }
+}
+
+impl From<atomicwrites::Error<std::io::Error>> for GeneratorError {
+    fn from(e: atomicwrites::Error<std::io::Error>) -> Self {
+        GeneratorError::FileWrite {
+            path: std::path::PathBuf::from("unknown"),
+            source: e.into(),
+        }
+    }
 }

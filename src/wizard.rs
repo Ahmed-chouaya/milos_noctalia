@@ -78,7 +78,7 @@ impl WizardStep for WelcomeStep {
 
             let paragraph = Paragraph::new(prompt)
                 .style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
-                .block(Block::borders().borders(Borders::NONE));
+                .block(Block::new().borders(Borders::NONE));
 
             frame.render_widget(paragraph, prompt_area);
         }
@@ -168,7 +168,7 @@ impl WizardStep for TimezoneStep {
         };
         let filter_para = Paragraph::new(format!("{}{}", filter_text, filter_cursor))
             .style(Style::default().fg(Color::Cyan))
-            .block(Block::borders().title("Type to filter"));
+            .block(Block::new().title("Type to filter"));
 
         // Calculate list area (below filter)
         let list_height = area.height.saturating_sub(3);
@@ -185,7 +185,7 @@ impl WizardStep for TimezoneStep {
             .collect();
 
         let list = List::new(items)
-            .block(Block::borders().title("Select Timezone"))
+            .block(Block::new().title("Select Timezone"))
             .style(Style::default().fg(Color::White));
 
         frame.render_widget(filter_para, Rect::new(area.x, area.y, area.width, 2));
@@ -196,7 +196,7 @@ impl WizardStep for TimezoneStep {
             let match_count = format!("Showing {} of {} timezones", self.filtered_timezones.len(), TIMEZONES.len());
             let count_para = Paragraph::new(match_count)
                 .style(Style::default().fg(Color::DarkGray))
-                .block(Block::borders().borders(Borders::NONE));
+                .block(Block::new().borders(Borders::NONE));
 
             let count_area = Rect::new(area.x, area.y + area.height - 1, area.width, 1);
             frame.render_widget(count_para, count_area);
@@ -233,7 +233,7 @@ impl WizardStep for TimezoneStep {
                 }
                 crossterm::event::KeyCode::Esc => {
                     if self.filter.is_empty() {
-                        state.go_back()?;
+                        state.go_back();
                     } else {
                         self.filter.clear();
                         self.apply_filter();
@@ -332,7 +332,7 @@ impl WizardStep for KeyboardStep {
         };
         let filter_para = Paragraph::new(format!("{}{}", filter_text, filter_cursor))
             .style(Style::default().fg(Color::Cyan))
-            .block(Block::borders().title("Type to filter"));
+            .block(Block::new().title("Type to filter"));
 
         // Calculate list area (below filter)
         let list_height = area.height.saturating_sub(3);
@@ -349,7 +349,7 @@ impl WizardStep for KeyboardStep {
             .collect();
 
         let list = List::new(items)
-            .block(Block::borders().title("Select Keyboard Layout"))
+            .block(Block::new().title("Select Keyboard Layout"))
             .style(Style::default().fg(Color::White));
 
         frame.render_widget(filter_para, Rect::new(area.x, area.y, area.width, 2));
@@ -360,7 +360,7 @@ impl WizardStep for KeyboardStep {
             let match_count = format!("Showing {} of {} layouts", self.filtered_layouts.len(), KEYBOARD_LAYOUTS.len());
             let count_para = Paragraph::new(match_count)
                 .style(Style::default().fg(Color::DarkGray))
-                .block(Block::borders().borders(Borders::NONE));
+                .block(Block::new().borders(Borders::NONE));
 
             let count_area = Rect::new(area.x, area.y + area.height - 1, area.width, 1);
             frame.render_widget(count_para, count_area);
@@ -397,7 +397,7 @@ impl WizardStep for KeyboardStep {
                 }
                 crossterm::event::KeyCode::Esc => {
                     if self.filter.is_empty() {
-                        state.go_back()?;
+                        state.go_back();
                     } else {
                         self.filter.clear();
                         self.apply_filter();
@@ -511,7 +511,7 @@ impl WizardStep for AccountStep {
 
         let paragraph = Paragraph::new(text.join("\n"))
             .style(Style::default().fg(Color::White))
-            .block(Block::borders().title("Account"));
+            .block(Block::new().title("Account"));
 
         frame.render_widget(paragraph, area);
     }
@@ -576,15 +576,15 @@ impl WizardStep for AccountStep {
                 }
                 crossterm::event::KeyCode::Backspace => {
                     match self.focus_field {
-                        0 => self.hostname_buffer.pop(),
-                        1 => self.username_buffer.pop(),
-                        2 => self.full_name_buffer.pop(),
-                        3 => self.git_username_buffer.pop(),
-                        4 => self.git_email_buffer.pop(),
+                        0 => { let _ = self.hostname_buffer.pop(); }
+                        1 => { let _ = self.username_buffer.pop(); }
+                        2 => { let _ = self.full_name_buffer.pop(); }
+                        3 => { let _ = self.git_username_buffer.pop(); }
+                        4 => { let _ = self.git_email_buffer.pop(); }
                         _ => {}
                     }
                 }
-                crossterm::event::KeyCode::Ctrl('u') => {
+                crossterm::event::KeyCode::Char('u') if key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
                     // Clear current field
                     match self.focus_field {
                         0 => self.hostname_buffer.clear(),
@@ -710,7 +710,7 @@ impl WizardStep for PathsStep {
 
         let paragraph = Paragraph::new(text.join("\n"))
             .style(Style::default().fg(Color::White))
-            .block(Block::borders().title("Paths & Directories"));
+            .block(Block::new().title("Paths & Directories"));
 
         frame.render_widget(paragraph, area);
     }
@@ -767,13 +767,13 @@ impl WizardStep for PathsStep {
                 }
                 crossterm::event::KeyCode::Backspace => {
                     match self.focus_field {
-                        0 => self.wallpaper_buffer.pop(),
-                        1 => self.avatar_buffer.pop(),
-                        2 => self.screenshot_buffer.pop(),
+                        0 => { let _ = self.wallpaper_buffer.pop(); }
+                        1 => { let _ = self.avatar_buffer.pop(); }
+                        2 => { let _ = self.screenshot_buffer.pop(); }
                         _ => {}
                     };
                 }
-                crossterm::event::KeyCode::Ctrl('u') => {
+                crossterm::event::KeyCode::Char('u') if key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
                     // Clear current field
                     match self.focus_field {
                         0 => self.wallpaper_buffer.clear(),
@@ -892,7 +892,7 @@ impl WizardStep for GenerateStep {
 
                 let paragraph = Paragraph::new(text.join("\n"))
                     .style(Style::default().fg(Color::White))
-                    .block(Block::borders().title("Generate Configuration"));
+                    .block(Block::new().title("Generate Configuration"));
 
                 frame.render_widget(paragraph, area);
             }
@@ -907,7 +907,7 @@ impl WizardStep for GenerateStep {
 
                 let paragraph = Paragraph::new(text.join("\n"))
                     .style(Style::default().fg(Color::Yellow))
-                    .block(Block::borders().title("Generating..."));
+                    .block(Block::new().title("Generating..."));
 
                 frame.render_widget(paragraph, area);
             }
@@ -933,7 +933,7 @@ impl WizardStep for GenerateStep {
 
                 let paragraph = Paragraph::new(text.join("\n"))
                     .style(Style::default().fg(Color::Green))
-                    .block(Block::borders().title("Success"));
+                    .block(Block::new().title("Success"));
 
                 frame.render_widget(paragraph, area);
             }
@@ -951,7 +951,7 @@ impl WizardStep for GenerateStep {
 
                 let paragraph = Paragraph::new(text.join("\n"))
                     .style(Style::default().fg(Color::Red))
-                    .block(Block::borders().title("Error"));
+                    .block(Block::new().title("Error"));
 
                 frame.render_widget(paragraph, area);
             }
@@ -1031,7 +1031,7 @@ impl WizardStep for SummaryStep {
 
         let paragraph = Paragraph::new(text.join("\n"))
             .style(Style::default().fg(Color::White))
-            .block(Block::borders().title("Review Configuration"));
+            .block(Block::new().title("Review Configuration"));
 
         frame.render_widget(paragraph, area);
     }
@@ -1086,7 +1086,7 @@ pub fn render_sidebar(frame: &mut Frame, state: &WizardState, area: Rect) {
         .collect();
 
     let list = List::new(items)
-        .block(Block::borders().title("Steps"))
+        .block(Block::new().title("Steps"))
         .style(Style::default().bg(Color::Rgb(30, 30, 30)));
 
     frame.render_widget(list, area);
@@ -1110,14 +1110,14 @@ pub fn run_wizard() -> Result<(), String> {
     let state = Arc::new(RwLock::new(WizardState::new()));
 
     // Enter raw mode
-    enable_raw_mode()?;
+    enable_raw_mode().map_err(|e| e.to_string())?;
 
     // Create terminal
     let backend = CrosstermBackend::new(std::io::stdout());
-    let mut terminal = ratatui::Terminal::new(backend)?;
+    let mut terminal = ratatui::Terminal::new(backend).map_err(|e| e.to_string())?;
 
     // Enable bracketed paste
-    execute!(terminal.backend_mut(), EnableBracketedPaste)?;
+    execute!(terminal.backend_mut(), EnableBracketedPaste).map_err(|e| e.to_string())?;
 
     // Main render loop
     loop {
@@ -1144,7 +1144,7 @@ pub fn run_wizard() -> Result<(), String> {
             if let Some(ref error_modal) = state_guard.error_mode {
                 render_error_modal(frame, error_modal, frame.size());
             }
-        })?;
+        }).map_err(|e| e.to_string())?;
 
         // Handle one event
         let event = {
@@ -1230,7 +1230,7 @@ pub fn run_wizard() -> Result<(), String> {
     // Cleanup
     execute!(terminal.backend_mut(), DisableBracketedPaste).ok();
     execute!(terminal.backend_mut(), Clear(ClearType::All)).ok();
-    disable_raw_mode()?;
+    disable_raw_mode().map_err(|e| e.to_string())?;
 
     Ok(())
 }

@@ -13,6 +13,8 @@ use ratatui::{
     widgets::canvas::{Canvas, Painter},
     layout::Rect,
     Frame,
+    style::{Style, Color, Modifier, Span},
+    text::{Line, Span as TextSpan},
 };
 use ratatui::backend::CrosstermBackend;
 use std::io::Stdout;
@@ -91,7 +93,6 @@ const S_PIXELS: [[Pixel; LETTER_WIDTH]; LETTER_HEIGHT] = [
     [Pixel::Empty, Pixel::Empty, Pixel::Empty, Pixel::Empty, Pixel::Letter, Pixel::Empty],
     [Pixel::Empty, Pixel::Empty, Pixel::Empty, Pixel::Empty, Pixel::Letter, Pixel::Empty],
     [Pixel::Empty, Pixel::Empty, Pixel::Empty, Pixel::Empty, Pixel::Letter, Pixel::Empty],
-    [Pixel::Empty, Pixel::Letter, Pixel::Letter, Pixel::Letter, Pixel::Letter, Pixel::Empty],
 ];
 
 /// All letters as a const array
@@ -207,8 +208,8 @@ pub fn render_logo(
 
     // Create canvas for pixel art
     let canvas = Canvas::default()
-        .x_bounds(0.0, area.width as f64)
-        .y_bounds(0.0, area.height as f64)
+        .x_bounds([0.0, area.width as f64])
+        .y_bounds([0.0, area.height as f64])
         .paint(move |ctx| {
             // Draw each letter up to animation progress
             for (letter_idx, &letter_pixels) in letters.iter().enumerate() {
@@ -229,10 +230,7 @@ pub fn render_logo(
                                 ctx.print(
                                     pixel_x,
                                     pixel_y,
-                                    "█",
-                                    NEON_GLOW.0,
-                                    NEON_GLOW.1,
-                                    NEON_GLOW.2,
+                                    Line::from(Span::styled("█", Style::default().fg(Color::Rgb(NEON_GLOW.0, NEON_GLOW.1, NEON_GLOW.2)))),
                                 );
                             }
                             Pixel::Glow => {
@@ -240,10 +238,7 @@ pub fn render_logo(
                                 ctx.print(
                                     pixel_x,
                                     pixel_y,
-                                    "▒",
-                                    AMBER_GLOW.0,
-                                    AMBER_GLOW.1,
-                                    AMBER_GLOW.2,
+                                    Line::from(Span::styled("▒", Style::default().fg(Color::Rgb(AMBER_GLOW.0, AMBER_GLOW.1, AMBER_GLOW.2)))),
                                 );
                             }
                             Pixel::Empty => {}
@@ -259,10 +254,7 @@ pub fn render_logo(
                 ctx.print(
                     cursor_x,
                     cursor_y,
-                    "█",
-                    NEON_GLOW.0,
-                    NEON_GLOW.1,
-                    NEON_GLOW.2,
+                    Line::from(Span::styled("█", Style::default().fg(Color::Rgb(NEON_GLOW.0, NEON_GLOW.1, NEON_GLOW.2)))),
                 );
             }
         });

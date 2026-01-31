@@ -8,6 +8,7 @@
 
 use std::error::Error;
 use std::fmt;
+use std::sync::Arc;
 use ratatui::{
     widgets::{Block, Borders, Paragraph},
     layout::Rect,
@@ -48,7 +49,7 @@ pub enum ErrorType {
     /// Error from a std::error::Error source
     Source {
         message: String,
-        source: Box<dyn Error + Send + Sync>,
+        source: Option<Arc<dyn Error + Send + Sync>>,
     },
 }
 
@@ -114,7 +115,7 @@ pub struct ErrorModal {
     /// Currently selected action button
     pub selected_action: ErrorAction,
     /// Source error for color-eyre backtrace
-    pub source_error: Option<Box<dyn Error + Send + Sync>>,
+    pub source_error: Option<Arc<dyn Error + Send + Sync>>,
 }
 
 impl ErrorModal {
@@ -133,7 +134,7 @@ impl ErrorModal {
         Self {
             error_type: ErrorType::Source {
                 message: error.to_string(),
-                source: Box::new(error),
+                source: Some(Arc::new(error)),
             },
             backtrace_visible: false,
             selected_action: ErrorAction::Dismiss,
@@ -251,7 +252,7 @@ pub fn render_error_modal(
 
     // Semi-transparent overlay
     let overlay = Block::default()
-        .style(Style::default().bg(Color::Rgb(0, 0, 0).with_alpha(0.7)))
+        .style(Style::default().bg(Color::Black))
         .borders(Borders::NONE);
 
     frame.render_widget(overlay, area);

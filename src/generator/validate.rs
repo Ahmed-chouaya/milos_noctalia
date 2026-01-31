@@ -99,13 +99,11 @@ pub fn validate_nix_syntax(content: &str) -> Result<(), GeneratorError> {
                 brace_depth += 1;
             } else if c == '}' {
                 if brace_depth == 0 {
-                    return Err(GeneratorError::NixSyntax {
-                        message: format!(
-                            "unbalanced closing brace at line {}, character {}",
-                            line_num + 1,
-                            char_num + 1
-                        ),
-                    });
+                    return Err(GeneratorError::NixSyntax(format!(
+                        "unbalanced closing brace at line {}, character {}",
+                        line_num + 1,
+                        char_num + 1
+                    )));
                 }
                 brace_depth -= 1;
             }
@@ -113,15 +111,11 @@ pub fn validate_nix_syntax(content: &str) -> Result<(), GeneratorError> {
     }
 
     if in_string {
-        return Err(GeneratorError::NixSyntax {
-            message: "unclosed string literal at end of file".to_string(),
-        });
+        return Err(GeneratorError::NixSyntax("unclosed string literal at end of file".to_string()));
     }
 
     if brace_depth != 0 {
-        return Err(GeneratorError::NixSyntax {
-            message: format!("unbalanced braces: {} unmatched '{{'", brace_depth),
-        });
+        return Err(GeneratorError::NixSyntax(format!("unbalanced braces: {} unmatched '{{'", brace_depth)));
     }
 
     Ok(())
@@ -174,8 +168,8 @@ mod tests {
 "#;
         let result = validate_nix_syntax(content);
         assert!(result.is_err());
-        if let Err(GeneratorError::NixSyntax { message }) = result {
-            assert!(message.contains("unbalanced braces"));
+        if let Err(GeneratorError::NixSyntax(msg)) = result {
+            assert!(msg.contains("unbalanced braces"));
         }
     }
 
