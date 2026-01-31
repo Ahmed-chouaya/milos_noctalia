@@ -19,7 +19,7 @@ awaiting: user response
 ## Tests
 
 ### 1. Script Launches Installer
-expected: User runs `./milos` from their NixOS config directory (with flake.nix). Script enters nix-shell, builds if needed, and launches the TUI installer showing the MILOS logo and Welcome step.
+expected: User runs `./milos` from the cloned milos_niri directory. Script auto-detects hostname from /etc/hostname, builds if needed, and launches the TUI installer showing the MILOS logo and Welcome step.
 result: pending
 
 ### 2. Account Step Works
