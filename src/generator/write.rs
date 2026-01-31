@@ -43,7 +43,7 @@ pub fn write_config_atomically(path: &Path, content: &str) -> Result<(), Generat
         })
         .map_err(|e| GeneratorError::FileWrite {
             path: path.to_path_buf(),
-            source: e,
+            source: e.into(),
         })?;
 
     Ok(())

@@ -156,11 +156,7 @@ pub fn generate_all(
             };
 
             // Write the file atomically
-            write::write_config_atomically(&output_path, &file.content)
-                .map_err(|e| GeneratorError::FileWrite {
-                    path: output_path.clone(),
-                    source: e,
-                })?;
+            write::write_config_atomically(&output_path, &file.content)?;
 
             // Record the relative path from output_dir
             let relative_path = output_path.strip_prefix(output_dir)?.to_path_buf();

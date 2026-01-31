@@ -496,17 +496,17 @@ impl WizardStep for AccountStep {
         let git_username_prefix = if self.focus_field == 3 { "▶ " } else { "  " };
         let git_email_prefix = if self.focus_field == 4 { "▶ " } else { "  " };
 
-        let text = vec![
-            "Configure your account settings:",
-            "",
-            &format!("{}Hostname: {}", hostname_prefix, hostname),
-            &format!("{}Username: {}", username_prefix, username),
-            &format!("{}Full Name: {}", full_name_prefix, full_name),
-            &format!("{}Git Username: {}", git_username_prefix, git_username),
-            &format!("{}Git Email: {}", git_email_prefix, git_email),
-            "",
-            "Use arrow keys or Tab to navigate between fields.",
-            "Press Enter to save each field and advance.",
+        let text: Vec<String> = vec![
+            "Configure your account settings:".to_string(),
+            "".to_string(),
+            format!("{}Hostname: {}", hostname_prefix, hostname),
+            format!("{}Username: {}", username_prefix, username),
+            format!("{}Full Name: {}", full_name_prefix, full_name),
+            format!("{}Git Username: {}", git_username_prefix, git_username),
+            format!("{}Git Email: {}", git_email_prefix, git_email),
+            "".to_string(),
+            "Use arrow keys or Tab to navigate between fields.".to_string(),
+            "Press Enter to save each field and advance.".to_string(),
         ];
 
         let paragraph = Paragraph::new(text.join("\n"))
@@ -692,20 +692,20 @@ impl WizardStep for PathsStep {
             avatar.to_string()
         };
 
-        let text = vec![
-            "Configure paths for Noctalia:",
-            "",
-            &format!("{}Wallpaper Directory: {}", wallpaper_prefix, wallpaper),
-            &format!("{}Avatar Image: {} (optional)", avatar_prefix, avatar_display),
-            &format!("{}Screenshot Directory: {}", screenshot_prefix, screenshot),
-            "",
-            "These paths are used by Noctalia for:",
-            "  • Finding wallpaper images",
-            "  • Displaying your avatar in UI",
-            "  • Saving screenshots",
-            "",
-            "Use arrow keys or Tab to navigate between fields.",
-            "Press Enter to save each field and advance.",
+        let text: Vec<String> = vec![
+            "Configure paths for Noctalia:".to_string(),
+            "".to_string(),
+            format!("{}Wallpaper Directory: {}", wallpaper_prefix, wallpaper),
+            format!("{}Avatar Image: {} (optional)", avatar_prefix, avatar_display),
+            format!("{}Screenshot Directory: {}", screenshot_prefix, screenshot),
+            "".to_string(),
+            "These paths are used by Noctalia for:".to_string(),
+            "  • Finding wallpaper images".to_string(),
+            "  • Displaying your avatar in UI".to_string(),
+            "  • Saving screenshots".to_string(),
+            "".to_string(),
+            "Use arrow keys or Tab to navigate between fields.".to_string(),
+            "Press Enter to save each field and advance.".to_string(),
         ];
 
         let paragraph = Paragraph::new(text.join("\n"))
@@ -871,23 +871,23 @@ impl WizardStep for GenerateStep {
                 let hostname = state.hostname.as_deref().unwrap_or("(not set)");
                 let username = state.username.as_deref().unwrap_or("(not set)");
 
-                let text = vec![
-                    "Generate your NixOS configuration:",
-                    "",
-                    &format!("  Hostname:  {}", hostname),
-                    &format!("  Username:  {}", username),
-                    "",
-                    "The following files will be generated:",
-                    "  • flake.nix (NixOS flake configuration)",
-                    "  • users.nix (User account configuration)",
-                    "  • git.nix (Git configuration)",
-                    "  • locale.nix (Locale settings)",
-                    "  • noctalia.nix (Noctalia shell config)",
-                    "  • niri/config.kdl (Niri compositor config)",
-                    "  • nix.conf (Nix configuration)",
-                    "",
-                    "Press ENTER to generate configuration files.",
-                    "Press ESC to go back.",
+                let text: Vec<String> = vec![
+                    "Generate your NixOS configuration:".to_string(),
+                    "".to_string(),
+                    format!("  Hostname:  {}", hostname),
+                    format!("  Username:  {}", username),
+                    "".to_string(),
+                    "The following files will be generated:".to_string(),
+                    "  • flake.nix (NixOS flake configuration)".to_string(),
+                    "  • users.nix (User account configuration)".to_string(),
+                    "  • git.nix (Git configuration)".to_string(),
+                    "  • locale.nix (Locale settings)".to_string(),
+                    "  • noctalia.nix (Noctalia shell config)".to_string(),
+                    "  • niri/config.kdl (Niri compositor config)".to_string(),
+                    "  • nix.conf (Nix configuration)".to_string(),
+                    "".to_string(),
+                    "Press ENTER to generate configuration files.".to_string(),
+                    "Press ESC to go back.".to_string(),
                 ];
 
                 let paragraph = Paragraph::new(text.join("\n"))
@@ -897,12 +897,12 @@ impl WizardStep for GenerateStep {
                 frame.render_widget(paragraph, area);
             }
             GenerationStatus::Generating => {
-                let text = vec![
-                    "Generating configuration files...",
-                    "",
-                    "Please wait while your NixOS configuration is being generated.",
-                    "",
-                    "This may take a moment...",
+                let text: Vec<String> = vec![
+                    "Generating configuration files...".to_string(),
+                    "".to_string(),
+                    "Please wait while your NixOS configuration is being generated.".to_string(),
+                    "".to_string(),
+                    "This may take a moment...".to_string(),
                 ];
 
                 let paragraph = Paragraph::new(text.join("\n"))
@@ -919,16 +919,16 @@ impl WizardStep for GenerateStep {
                     .map(|p| format!("  • {}", p.display()))
                     .collect();
 
-                let text = vec![
-                    "✓ Configuration generated successfully!",
-                    "",
-                    &format!("Generated {} files:", file_count),
-                    "",
-                    &file_list.join("\n"),
-                    "",
-                    "Your NixOS configuration is ready in the 'milos-output' directory.",
-                    "",
-                    "Press ENTER to continue.",
+                let text: Vec<String> = vec![
+                    "✓ Configuration generated successfully!".to_string(),
+                    "".to_string(),
+                    format!("Generated {} files:", file_count),
+                    "".to_string(),
+                    file_list.join("\n"),
+                    "".to_string(),
+                    "Your NixOS configuration is ready in the 'milos-output' directory.".to_string(),
+                    "".to_string(),
+                    "Press ENTER to continue.".to_string(),
                 ];
 
                 let paragraph = Paragraph::new(text.join("\n"))
@@ -940,13 +940,13 @@ impl WizardStep for GenerateStep {
             GenerationStatus::Error => {
                 let error_msg = self.error.as_deref().unwrap_or("Unknown error");
 
-                let text = vec![
-                    "✗ Error generating configuration",
-                    "",
-                    &format!("Error: {}", error_msg),
-                    "",
-                    "Press ENTER to retry.",
-                    "Press ESC to go back.",
+                let text: Vec<String> = vec![
+                    "✗ Error generating configuration".to_string(),
+                    "".to_string(),
+                    format!("Error: {}", error_msg),
+                    "".to_string(),
+                    "Press ENTER to retry.".to_string(),
+                    "Press ESC to go back.".to_string(),
                 ];
 
                 let paragraph = Paragraph::new(text.join("\n"))
@@ -1017,16 +1017,16 @@ impl WizardStep for SummaryStep {
         let locale = state.locale.as_deref().unwrap_or("(not set)");
         let keyboard = state.keyboard_layout.as_deref().unwrap_or("(not set)");
 
-        let text = vec![
-            "Review your configuration:",
-            "",
-            &format!("  Hostname:        {}", hostname),
-            &format!("  Username:        {}", username),
-            &format!("  Locale:          {}", locale),
-            &format!("  Keyboard:        {}", keyboard),
-            "",
-            "Press Enter to begin installation.",
-            "Press Escape to go back and make changes.",
+        let text: Vec<String> = vec![
+            "Review your configuration:".to_string(),
+            "".to_string(),
+            format!("  Hostname:        {}", hostname),
+            format!("  Username:        {}", username),
+            format!("  Locale:          {}", locale),
+            format!("  Keyboard:        {}", keyboard),
+            "".to_string(),
+            "Press Enter to begin installation.".to_string(),
+            "Press Escape to go back and make changes.".to_string(),
         ];
 
         let paragraph = Paragraph::new(text.join("\n"))
@@ -1161,7 +1161,7 @@ pub fn run_wizard() -> Result<(), String> {
             let mut state_guard = state.write().unwrap();
 
             // Check for error mode
-            if let Some(error_modal) = &state_guard.error_mode {
+            if let Some(ref mut error_modal) = state_guard.error_mode {
                 // Handle error state - pass to error modal
                 if let Event::Key(key) = event {
                     if let Some(action) = error_modal.handle_input(key.code, key.modifiers) {

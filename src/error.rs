@@ -130,7 +130,7 @@ impl ErrorModal {
     }
 
     /// Create from a std::error::Error
-    pub fn from_error<E: Error + 'static>(error: E) -> Self {
+    pub fn from_error<E: Error + 'static + Send + Sync>(error: E) -> Self {
         Self {
             error_type: ErrorType::Source {
                 message: error.to_string(),

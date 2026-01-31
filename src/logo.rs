@@ -13,8 +13,8 @@ use ratatui::{
     widgets::canvas::{Canvas, Painter},
     layout::Rect,
     Frame,
-    style::{Style, Color, Modifier, Span},
-    text::{Line, Span as TextSpan},
+    style::{Style, Color, Modifier},
+    text::{Line, Span},
 };
 use ratatui::backend::CrosstermBackend;
 use std::io::Stdout;
@@ -219,8 +219,9 @@ pub fn render_logo(
 
                 let letter_start_x = x + (letter_idx * (LETTER_WIDTH + LETTER_SPACING)) as f64;
 
-                for (row, pixel_row) in letter_pixels.iter().enumerate() {
-                    for (col, pixel) in pixel_row.iter() {
+                for row in 0..LETTER_HEIGHT {
+                    for col in 0..LETTER_WIDTH {
+                        let pixel = letter_pixels[row][col];
                         let pixel_x = letter_start_x + col as f64;
                         let pixel_y = y + row as f64;
 
