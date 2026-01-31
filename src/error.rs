@@ -9,7 +9,7 @@
 use std::error::Error;
 use std::fmt;
 use ratatui::{
-    widgets::{Block, Borders, Paragraph, Button},
+    widgets::{Block, Borders, Paragraph},
     layout::Rect,
     Frame,
     style::{Style, Color, Modifier},
@@ -55,7 +55,7 @@ pub enum ErrorType {
 impl fmt::Display for ErrorType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ErrorType::InputValidation { field, message, suggestion } {
+            ErrorType::InputValidation { field, message, suggestion } => {
                 write!(f, "{}", message)?;
                 if let Some(suggestion) = suggestion {
                     write!(f, "\nSuggestion: {}", suggestion)?;
@@ -185,11 +185,11 @@ impl ErrorModal {
     pub fn handle_input(&mut self, key_code: crossterm::event::KeyCode, key_modifiers: crossterm::event::KeyModifiers) -> Option<ErrorAction> {
         match key_code {
             crossterm::event::KeyCode::Tab => {
-                self cycle_action();
+                self.cycle_action();
                 None
             }
             crossterm::event::KeyCode::Left => {
-                self cycle_action_backward();
+                self.cycle_action_backward();
                 None
             }
             crossterm::event::KeyCode::Right => {
@@ -234,7 +234,7 @@ impl ErrorModal {
 
 /// Render an error modal overlay
 pub fn render_error_modal(
-    frame: &mut Frame<CrosstermBackend<Stdout>>,
+    frame: &mut Frame,
     modal: &ErrorModal,
     area: Rect,
 ) {
@@ -309,7 +309,7 @@ pub fn render_error_modal(
 
     for (i, action) in actions.iter().enumerate() {
         let button_x = button_start_x + (i as u16 * (button_width + 1));
-        let button_area = Rect::new(button_x, button_area.y, button_width, 3);
+        let button_area = Rect::new(button_x, buttons_area.y, button_width, 3);
 
         let label = match action {
             ErrorAction::Retry => "[ Retry ]",
@@ -342,7 +342,7 @@ pub fn render_error_modal(
 
 /// Render inline validation error below a field
 pub fn render_inline_error(
-    frame: &mut Frame<CrosstermBackend<Stdout>>,
+    frame: &mut Frame,
     message: &str,
     area: Rect,
 ) {

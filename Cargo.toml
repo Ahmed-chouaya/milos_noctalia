@@ -14,7 +14,7 @@ anyhow = "1.0"
 regex = "1"
 
 [dev-dependencies]
-tempfile = "4"
+tempfile = "3"
 
 [lib]
 path = "src/lib.rs"

@@ -20,23 +20,16 @@ pub mod noctalia;
 pub mod niri;
 pub mod nixconf;
 
+pub mod context;
+pub mod error;
 pub mod validate;
 pub mod write;
 
 pub use self::validate::validate_no_unsubstituted;
 pub use self::write::write_config_atomically;
-use self::validate::validate_no_unsubstituted;
 
 pub use self::error::GeneratorError;
 pub use self::context::UserConfig;
-
-pub use self::flake::FlakeGenerator;
-pub use self::users::UsersGenerator;
-pub use self::git::GitGenerator;
-pub use self::locale::LocaleGenerator;
-pub use self::noctalia::NoctaliaGenerator;
-pub use self::niri::NiriGenerator;
-pub use self::nixconf::NixConfGenerator;
 
 /// Represents a generated file with its path and content.
 #[derive(Debug, Clone)]

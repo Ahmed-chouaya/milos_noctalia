@@ -19,6 +19,7 @@ use std::io::Stdout;
 
 /// Color scheme for the logo (Noctalia theme)
 const NEON_GREEN: (u8, u8, u8) = (0x00, 0xFF, 0x65); // Matrix/screen green
+const NEON_GLOW: (u8, u8, u8) = (0x00, 0xFF, 0x65); // Neon green for cursor/letters
 const AMBER_GLOW: (u8, u8, u8) = (0xFF, 0xB0, 0x00); // Amber glow
 const DARK_BG: (u8, u8, u8) = (0x10, 0x10, 0x10);    // Near black
 
@@ -103,7 +104,7 @@ const LETTERS: [&[[Pixel; LETTER_WIDTH]; LETTER_HEIGHT]; 5] = [
 ];
 
 /// Get all letters' pixel data
-pub fn get_letters() -> [&[[Pixel; LETTER_WIDTH]; LETTER_HEIGHT]; 5] {
+pub fn get_letters() -> [&'static [[Pixel; LETTER_WIDTH]; LETTER_HEIGHT]; 5] {
     LETTERS
 }
 
@@ -190,7 +191,7 @@ impl Default for LogoAnimation {
 
 /// Render the logo with animation
 pub fn render_logo(
-    frame: &mut Frame<CrosstermBackend<Stdout>>,
+    frame: &mut Frame,
     area: Rect,
     animation: &LogoAnimation,
 ) {
@@ -307,7 +308,7 @@ pub fn render_logo_ascii(animation: &LogoAnimation) -> Vec<String> {
 
 /// Complete logo rendering with subtitle
 pub fn render_full_logo(
-    frame: &mut Frame<CrosstermBackend<Stdout>>,
+    frame: &mut Frame,
     area: Rect,
     animation: &LogoAnimation,
 ) {

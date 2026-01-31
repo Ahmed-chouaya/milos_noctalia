@@ -1,0 +1,10 @@
+# Askama configuration
+[general]
+
+[[escaper]]
+path = "nix"
+extensions = ["nix", "conf"]
+
+[[escaper]]
+path = "kdl"
+extensions = ["kdl"]

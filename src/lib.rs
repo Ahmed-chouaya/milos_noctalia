@@ -9,5 +9,5 @@ pub mod error;
 pub mod generator;
 
 // Re-exports for convenience
-pub use state::{WizardState, Step, ErrorMode, SharedState};
+pub use state::{WizardState, Step, SharedState};
 pub use event::{Event, EventHandler, NavigationAction};

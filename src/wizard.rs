@@ -1,9 +1,10 @@
 use std::io::Stdout;
 use std::path::PathBuf;
+use std::sync::{Arc, RwLock};
 use std::time::Instant;
 use ratatui::{
     backend::CrosstermBackend,
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Tabs},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
 use ratatui::layout::{Layout, Direction, Constraint, Rect};
@@ -14,7 +15,7 @@ use crossterm::{
     execute,
 };
 use crate::state::{WizardState, Step, SharedState};
-use crate::event::{Event, EventHandler, run_event_loop};
+use crate::event::{Event, EventHandler};
 use crate::logo::{LogoAnimation, render_logo};
 use crate::error::{ErrorModal, render_error_modal};
 use crate::generator::{self, UserConfig};
@@ -25,7 +26,7 @@ pub trait WizardStep {
     fn title(&self) -> &'static str;
 
     /// Render the step content
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect);
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect);
 
     /// Handle user input
     fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String>;
@@ -57,7 +58,7 @@ impl WizardStep for WelcomeStep {
         "Welcome"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         // Update animation
         let mut animation = self.animation.clone();
         animation.update();
@@ -157,7 +158,7 @@ impl WizardStep for TimezoneStep {
         "Timezone"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         // Show filter input at top
         let filter_text = format!("Filter: {}", self.filter);
         let filter_cursor = if !self.filter.is_empty() {
@@ -321,7 +322,7 @@ impl WizardStep for KeyboardStep {
         "Keyboard Layout"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         // Show filter input at top
         let filter_text = format!("Filter: {}", self.filter);
         let filter_cursor = if !self.filter.is_empty() {
@@ -461,7 +462,7 @@ impl WizardStep for AccountStep {
         "Account"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         // Use buffers if available, otherwise fall back to state
         let hostname = if !self.hostname_buffer.is_empty() {
             &self.hostname_buffer
@@ -662,7 +663,7 @@ impl WizardStep for PathsStep {
         "Paths & Directories"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         // Use buffers if available, otherwise fall back to state defaults
         let wallpaper = if !self.wallpaper_buffer.is_empty() {
             &self.wallpaper_buffer
@@ -864,7 +865,7 @@ impl WizardStep for GenerateStep {
         "Generate Configuration"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         match self.status {
             GenerationStatus::Pending => {
                 let hostname = state.hostname.as_deref().unwrap_or("(not set)");
@@ -1010,7 +1011,7 @@ impl WizardStep for SummaryStep {
         "Review & Install"
     }
 
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
         let hostname = state.hostname.as_deref().unwrap_or("(not set)");
         let username = state.username.as_deref().unwrap_or("(not set)");
         let locale = state.locale.as_deref().unwrap_or("(not set)");
@@ -1055,7 +1056,7 @@ impl WizardStep for SummaryStep {
 }
 
 /// Render the sidebar showing all steps with progress
-pub fn render_sidebar(frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+pub fn render_sidebar(frame: &mut Frame, state: &WizardState, area: Rect) {
     let steps = Step::all_steps();
     let current_step = state.current_step();
 
@@ -1094,7 +1095,7 @@ pub fn render_sidebar(frame: &mut Frame<CrosstermBackend<Stdout>>, state: &Wizar
 /// Create the current step based on state
 pub fn create_current_step(step: Step) -> Box<dyn WizardStep> {
     match step {
-        Step::Welcome => Box::new(WelcomeStep),
+        Step::Welcome => Box::new(WelcomeStep::new()),
         Step::Timezone => Box::new(TimezoneStep::new()),
         Step::Keyboard => Box::new(KeyboardStep::new()),
         Step::Account => Box::new(AccountStep::new()),
@@ -1227,7 +1228,7 @@ pub fn run_wizard() -> Result<(), String> {
     }
 
     // Cleanup
-    execute!(terminal.backend_mut(), DisableBranketedPaste).ok();
+    execute!(terminal.backend_mut(), DisableBracketedPaste).ok();
     execute!(terminal.backend_mut(), Clear(ClearType::All)).ok();
     disable_raw_mode()?;
 

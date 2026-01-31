@@ -124,9 +124,8 @@ impl EventHandler {
                 // Mark current step complete and go forward
                 state.mark_step_complete();
                 if let Err(e) = state.go_next() {
-                    state.set_error(super::error::ErrorMode::SystemError {
+                    state.set_error_type(super::error::ErrorType::Other {
                         message: e,
-                        recoverable: true,
                     });
                 }
             }
