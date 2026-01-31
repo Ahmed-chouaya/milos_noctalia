@@ -2,53 +2,30 @@
 set -euo pipefail
 
 # milos_niri - NixOS TUI Installer
-# Usage: ./milos [nixos-config-dir]
+# Usage: ./milos
 #
-# If nixos-config-dir is provided, runs installer from that directory.
-# Otherwise, prompts user to navigate to their NixOS config with flake.nix.
+# Detects current hostname, generates NixOS configs, and applies them.
+# Everything handled automatically - just run from the cloned directory.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINARY="$SCRIPT_DIR/target/release/milos_niri"
-SOURCE_DIR="$SCRIPT_DIR"
 
-# Determine target directory
-if [[ -n "${1:-}" ]]; then
-    TARGET_DIR="$1"
-else
-    echo "══════════════════════════════════════════════════════════════"
-    echo "  MILOS - NixOS TUI Installer"
-    echo "══════════════════════════════════════════════════════════════"
-    echo ""
-    echo "No directory specified. Please navigate to your NixOS config"
-    echo "directory (the one containing flake.nix) before running."
-    echo ""
-    echo "Example: ./milos /etc/nixos"
-    echo ""
-    read -rp "Path to your NixOS config directory: " TARGET_DIR
-fi
-
-# Validate target directory
-if [[ ! -d "$TARGET_DIR" ]]; then
-    echo "Error: Directory does not exist: $TARGET_DIR"
-    exit 1
-fi
-
-if [[ ! -f "$TARGET_DIR/flake.nix" ]]; then
-    echo "Error: No flake.nix found in $TARGET_DIR"
-    echo "The installer must run from a directory containing flake.nix"
-    exit 1
-fi
+# Detect current hostname
+HOSTNAME=$(cat /etc/hostname)
+echo "══════════════════════════════════════════════════════════════"
+echo "  MILOS - NixOS TUI Installer"
+echo "══════════════════════════════════════════════════════════════"
+echo ""
+echo "  Detected hostname: $HOSTNAME"
+echo ""
 
 # Build if needed
-if [[ ! -f "$BINARY" ]] || [[ "$SOURCE_DIR/src" -nt "$BINARY" ]]; then
-    echo "══════════════════════════════════════════════════════════════"
-    echo "  Building milos_niri..."
-    echo "══════════════════════════════════════════════════════════════"
+if [[ ! -f "$BINARY" ]]; then
+    echo "Building milos_niri..."
     echo ""
 
     nix-shell -p cargo rustc rustfmt git --run "
-        cd '$SOURCE_DIR'
-        echo 'Compiling...'
+        cd '$SCRIPT_DIR'
         cargo build --release
     "
 
@@ -58,11 +35,5 @@ if [[ ! -f "$BINARY" ]] || [[ "$SOURCE_DIR/src" -nt "$BINARY" ]]; then
 fi
 
 # Run the installer
-cd "$TARGET_DIR"
-echo "══════════════════════════════════════════════════════════════"
-echo "  Starting MILOS Installer..."
-echo "══════════════════════════════════════════════════════════════"
-echo ""
-echo "  Target: $TARGET_DIR"
-echo ""
+cd "$SCRIPT_DIR"
 "$BINARY"
