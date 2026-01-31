@@ -14,7 +14,7 @@
 |-----------|-------|
 | **Phase** | Phase 3: Config Generation (Complete) |
 | **Next Action** | Proceed to Phase 4 (`/gsd/plan-phase 4`) |
-| **Status** | 🟢 03-04 Complete |
+| **Status** | 🟢 03-05 Complete |
 | **Progress** | [████████████████████████████████] 100% |
 
 ## Session Continuity
@@ -45,6 +45,12 @@
 - Implemented generate_all() orchestration function
 - Added --generate flag to main.rs for CLI testing
 - Fixed Generator trait implementation in generators
+- Executed Phase 3 plan 03-05: Generate step integration
+- Added Generate step to Step enum in state.rs
+- Created GenerateStep struct with GenerationStatus enum (Pending/Generating/Success/Error)
+- Implemented GenerateStep.render() for all status states
+- Implemented GenerateStep.generate() calling generator::generate_all()
+- Users can now generate configs from TUI wizard after reviewing in Summary
 
 ### What Needs To Happen Next
 
