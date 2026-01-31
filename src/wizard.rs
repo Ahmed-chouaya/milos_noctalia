@@ -330,17 +330,59 @@ impl WizardStep for LocaleStep {
     }
 }
 
-/// Keyboard layout selection step
+/// Keyboard layout selection step with type-to-filter
 pub struct KeyboardStep {
     selected: usize,
-    layouts: Vec<&'static str>,
+    filter: String,
+    filtered_layouts: Vec<(&'static str, &'static str)>,
 }
+
+static KEYBOARD_LAYOUTS: &[(&'static str, &'static str)] = &[
+    ("us", "US (QWERTY)"),
+    ("gb", "UK (QWERTY)"),
+    ("de", "German (QWERTZ)"),
+    ("fr", "French (AZERTY)"),
+    ("es", "Spanish"),
+    ("it", "Italian"),
+    ("jp", "Japanese"),
+    ("ru", "Russian"),
+    ("br", "Brazilian (ABNT2)"),
+    ("sv", "Swedish"),
+    ("no", "Norwegian"),
+    ("dk", "Danish"),
+    ("fi", "Finnish"),
+    ("pt", "Portuguese"),
+    ("pl", "Polish"),
+    ("cz", "Czech"),
+    ("hu", "Hungarian"),
+    ("tr", "Turkish"),
+];
 
 impl KeyboardStep {
     pub fn new() -> Self {
         Self {
             selected: 0,
-            layouts: vec!["us", "gb", "de", "fr", "es", "it", "jp"],
+            filter: String::new(),
+            filtered_layouts: KEYBOARD_LAYOUTS.to_vec(),
+        }
+    }
+
+    fn apply_filter(&mut self) {
+        if self.filter.is_empty() {
+            self.filtered_layouts = KEYBOARD_LAYOUTS.to_vec();
+        } else {
+            self.filtered_layouts = KEYBOARD_LAYOUTS
+                .iter()
+                .filter(|(code, name)| {
+                    code.to_lowercase().contains(&self.filter.to_lowercase())
+                        || name.to_lowercase().contains(&self.filter.to_lowercase())
+                })
+                .copied()
+                .collect();
+        }
+        // Reset selection to top when filter changes
+        if self.selected >= self.filtered_layouts.len() {
+            self.selected = 0;
         }
     }
 }
@@ -351,22 +393,27 @@ impl WizardStep for KeyboardStep {
     }
 
     fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
-        let items: Vec<ListItem> = self.layouts
+        // Show filter input at top
+        let filter_text = format!("Filter: {}", self.filter);
+        let filter_cursor = if !self.filter.is_empty() {
+            " ←"
+        } else {
+            ""
+        };
+        let filter_para = Paragraph::new(format!("{}{}", filter_text, filter_cursor))
+            .style(Style::default().fg(Color::Cyan))
+            .block(Block::borders().title("Type to filter"));
+
+        // Calculate list area (below filter)
+        let list_height = area.height.saturating_sub(3);
+        let list_area = Rect::new(area.x, area.y + 2, area.width, list_height);
+
+        let items: Vec<ListItem> = self.filtered_layouts
             .iter()
             .enumerate()
-            .map(|(i, &layout)| {
+            .map(|(i, &(code, name))| {
                 let prefix = if i == self.selected { "▶ " } else { "  " };
-                let suffix = if Some(layout) == state.keyboard_layout.as_deref() { " ◀" } else { "" };
-                let name = match layout {
-                    "us" => "US (QWERTY)",
-                    "gb" => "UK (QWERTY)",
-                    "de" => "German (QWERTZ)",
-                    "fr" => "French (AZERTY)",
-                    "es" => "Spanish",
-                    "it" => "Italian",
-                    "jp" => "Japanese",
-                    _ => layout,
-                };
+                let suffix = if Some(code) == state.keyboard_layout.as_deref() { " ◀" } else { "" };
                 ListItem::new(format!("{}{}{}", prefix, name, suffix))
             })
             .collect();
@@ -375,7 +422,19 @@ impl WizardStep for KeyboardStep {
             .block(Block::borders().title("Select Keyboard Layout"))
             .style(Style::default().fg(Color::White));
 
-        frame.render_widget(list, area);
+        frame.render_widget(filter_para, Rect::new(area.x, area.y, area.width, 2));
+        frame.render_widget(list, list_area);
+
+        // Show match count if filter is active
+        if !self.filter.is_empty() {
+            let match_count = format!("Showing {} of {} layouts", self.filtered_layouts.len(), KEYBOARD_LAYOUTS.len());
+            let count_para = Paragraph::new(match_count)
+                .style(Style::default().fg(Color::DarkGray))
+                .block(Block::borders().borders(Borders::NONE));
+
+            let count_area = Rect::new(area.x, area.y + area.height - 1, area.width, 1);
+            frame.render_widget(count_para, count_area);
+        }
     }
 
     fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
@@ -387,14 +446,32 @@ impl WizardStep for KeyboardStep {
                     }
                 }
                 crossterm::event::KeyCode::Down => {
-                    if self.selected < self.layouts.len() - 1 {
+                    if self.selected < self.filtered_layouts.len() - 1 {
                         self.selected += 1;
                     }
                 }
                 crossterm::event::KeyCode::Enter => {
-                    state.keyboard_layout = Some(self.layouts[self.selected].to_string());
-                    state.mark_step_complete();
-                    state.go_next()?;
+                    if !self.filtered_layouts.is_empty() {
+                        state.keyboard_layout = Some(self.filtered_layouts[self.selected].0.to_string());
+                        state.mark_step_complete();
+                        state.go_next()?;
+                    }
+                }
+                crossterm::event::KeyCode::Char(c) => {
+                    self.filter.push(c);
+                    self.apply_filter();
+                }
+                crossterm::event::KeyCode::Backspace => {
+                    self.filter.pop();
+                    self.apply_filter();
+                }
+                crossterm::event::KeyCode::Esc => {
+                    if self.filter.is_empty() {
+                        state.go_back()?;
+                    } else {
+                        self.filter.clear();
+                        self.apply_filter();
+                    }
                 }
                 _ => {}
             }
