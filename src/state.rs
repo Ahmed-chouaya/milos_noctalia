@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+use crate::error::{ErrorModal, ErrorType};
+
 /// Represents the different steps in the wizard
 #[derive(Clone, Debug, PartialEq)]
 pub enum Step {
@@ -64,20 +66,6 @@ pub trait StepData: Send + Sync {
     fn validate(&self) -> Result<(), String>;
 }
 
-/// Error mode for handling different error types
-#[derive(Clone, Debug)]
-pub enum ErrorMode {
-    InputValidation {
-        field: String,
-        message: String,
-        suggestion: Option<String>,
-    },
-    SystemError {
-        message: String,
-        recoverable: bool,
-    },
-}
-
 /// The main wizard state - centralized storage for all wizard data
 #[derive(Clone, Debug)]
 pub struct WizardState {
@@ -88,7 +76,7 @@ pub struct WizardState {
     pub completed_steps: Vec<bool>,
 
     /// Current error mode (if any)
-    pub error_mode: Option<ErrorMode>,
+    pub error_mode: Option<ErrorModal>,
 
     /// Field that has input focus (for validation errors)
     pub focused_field: Option<String>,
@@ -203,8 +191,13 @@ impl WizardState {
     }
 
     /// Set an error
-    pub fn set_error(&mut self, error: ErrorMode) {
+    pub fn set_error(&mut self, error: ErrorModal) {
         self.error_mode = Some(error);
+    }
+
+    /// Set an error from ErrorType
+    pub fn set_error_type(&mut self, error_type: ErrorType) {
+        self.error_mode = Some(ErrorModal::new(error_type));
     }
 
     /// Clear the current error
@@ -219,7 +212,7 @@ impl WizardState {
     }
 
     /// Get current error
-    pub fn current_error(&self) -> Option<&ErrorMode> {
+    pub fn current_error(&self) -> Option<&ErrorModal> {
         self.error_mode.as_ref()
     }
 
@@ -273,7 +266,7 @@ impl WizardState {
     pub fn validate_field(&mut self, field: &str, value: Option<String>, validator: fn(Option<&String>) -> Result<(), String>) {
         let result = validator(value.as_ref());
         if let Err(e) = result {
-            self.set_error(ErrorMode::InputValidation {
+            self.set_error_type(ErrorType::InputValidation {
                 field: field.to_string(),
                 message: e,
                 suggestion: None,
