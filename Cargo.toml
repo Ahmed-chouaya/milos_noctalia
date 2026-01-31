@@ -1,0 +1,17 @@
+[package]
+name = "milos_niri"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ratatui = "0.30.0"
+crossterm = "0.29.0"
+color-eyre = "0.6"
+askama = "0.12"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "milos_niri"
+path = "src/main.rs"
