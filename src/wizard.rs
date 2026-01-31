@@ -12,9 +12,10 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
     execute,
 };
-use crate::state::{WizardState, Step, SharedState, ErrorMode};
+use crate::state::{WizardState, Step, SharedState};
 use crate::event::{Event, EventHandler, run_event_loop};
 use crate::logo::{LogoAnimation, render_logo};
+use crate::error::{ErrorModal, render_error_modal};
 
 /// Trait for wizard steps - each step implements this
 pub trait WizardStep {
@@ -515,6 +516,11 @@ pub fn run_wizard() -> Result<(), String> {
 
             // Render main content
             step.render(frame, &state_guard, chunks[1]);
+
+            // Render error modal if there's an error
+            if let Some(ref error_modal) = state_guard.error_mode {
+                render_error_modal(frame, error_modal, frame.size());
+            }
         })?;
 
         // Handle one event
@@ -532,26 +538,32 @@ pub fn run_wizard() -> Result<(), String> {
             let mut state_guard = state.write().unwrap();
 
             // Check for error mode
-            if let Some(error) = &state_guard.error_mode {
-                // Handle error state
-                match error {
-                    ErrorMode::InputValidation { field, message, .. } => {
-                        // Show error and allow correction
-                        if let Event::Key(key) = event {
-                            if key.code == crossterm::event::KeyCode::Enter {
+            if let Some(error_modal) = &state_guard.error_mode {
+                // Handle error state - pass to error modal
+                if let Event::Key(key) = event {
+                    if let Some(action) = error_modal.handle_input(key.code, key.modifiers) {
+                        match action {
+                            crate::error::ErrorAction::Dismiss | crate::error::ErrorAction::Cancel => {
                                 state_guard.clear_error();
+                            }
+                            crate::error::ErrorAction::Exit => {
+                                // Restore terminal and exit
+                                execute!(terminal.backend_mut(), DisableBracketedPaste).ok();
+                                execute!(terminal.backend_mut(), Clear(ClearType::All)).ok();
+                                disable_raw_mode().ok();
+                                return Ok(());
+                            }
+                            crate::error::ErrorAction::Retry => {
+                                state_guard.clear_error();
+                                // Retry logic would go here
+                            }
+                            crate::error::ErrorAction::ToggleBacktrace => {
+                                // Handled by handle_input
                             }
                         }
                     }
-                    ErrorMode::SystemError { message, .. } => {
-                        if let Event::Key(key) = event {
-                            if key.code == crossterm::event::KeyCode::Enter {
-                                state_guard.clear_error();
-                            }
-                        }
-                    }
+                    continue;
                 }
-                continue;
             }
 
             // Normal event processing
