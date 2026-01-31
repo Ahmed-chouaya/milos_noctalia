@@ -21,8 +21,13 @@ pub enum GeneratorError {
     Validation(String),
 
     /// Failed to write a file to disk.
-    #[error("Failed to write file '{0}': {1}")]
-    FileWrite(std::path::PathBuf, #[source] std::io::Error),
+    #[error("Failed to write file '{path}': {source}")]
+    FileWrite {
+        /// The path to the file that failed to write.
+        path: std::path::PathBuf,
+        /// The underlying I/O error.
+        source: std::io::Error,
+    },
 
     /// A template placeholder was not substituted.
     #[error("Unsubstituted placeholder in template '{0}': {1}")]

@@ -21,15 +21,9 @@ struct GitContext {
 pub struct GitGenerator;
 
 impl GitGenerator {
-    /// Validate generated git.nix content.
-    ///
-    /// # Arguments
-    /// * `content` - The generated content to validate.
-    ///
-    /// # Returns
-    /// Returns `Ok(())` if no unsubstituted placeholders remain.
-    pub fn validate(&self, content: &str) -> Result<(), GeneratorError> {
-        validate_no_unsubstituted(content, "git.nix")
+    /// Get the template name for validation.
+    pub fn template_name(&self) -> &'static str {
+        "git.nix"
     }
 }
 
@@ -49,5 +43,9 @@ impl Generator for GitGenerator {
 
     fn output_base_path(&self, _config: &UserConfig) -> PathBuf {
         PathBuf::from("modules")
+    }
+
+    fn template_name(&self) -> &'static str {
+        "git.nix"
     }
 }
