@@ -1098,6 +1098,8 @@ pub fn create_current_step(step: Step) -> Box<dyn WizardStep> {
         Step::Paths => Box::new(PathsStep::new()),
         Step::Summary => Box::new(SummaryStep),
         Step::Generate => Box::new(GenerateStep::new()),
+        Step::Execution => Box::new(ExecutionStep::new()),
+        Step::Completion => Box::new(CompletionStep::new()),
     }
 }
 
@@ -1229,4 +1231,234 @@ pub fn run_wizard() -> Result<(), String> {
     disable_raw_mode().map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+/// Execution status for tracking git commit and nixos-rebuild progress
+#[derive(Clone, Debug, PartialEq)]
+pub enum ExecutionStatus {
+    Idle,
+    GitCommitting,
+    GitComplete,
+    Rebuilding { phase: String, progress: Option<String> },
+    Success,
+    Failed { error: String, can_rollback: bool, previous_generation: Option<i32> },
+}
+
+/// Execution step - runs git commit and nixos-rebuild
+pub struct ExecutionStep {
+    pub status: ExecutionStatus,
+    pub output_lines: Vec<String>,
+    pub error_lines: Vec<String>,
+}
+
+impl ExecutionStep {
+    pub fn new() -> Self {
+        Self {
+            status: ExecutionStatus::Idle,
+            output_lines: Vec::new(),
+            error_lines: Vec::new(),
+        }
+    }
+}
+
+impl WizardStep for ExecutionStep {
+    fn title(&self) -> &'static str {
+        "Apply Configuration"
+    }
+    
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
+        let hostname = state.hostname.as_deref().unwrap_or("unknown");
+        
+        match &self.status {
+            ExecutionStatus::Idle => {
+                let text: Vec<String> = vec![
+                    format!("Ready to apply configuration to '{}':", hostname),
+                    "".to_string(),
+                    "This will:",
+                    "  1. Commit generated configs to git",
+                    "  2. Run nixos-rebuild switch --flake",
+                    "".to_string(),
+                    "Press ENTER to begin.".to_string(),
+                    "Press ESC to go back.".to_string(),
+                ];
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::White))
+                    .block(Block::new().title("Apply Configuration"));
+                frame.render_widget(paragraph, area);
+            }
+            ExecutionStatus::GitCommitting => {
+                let text: Vec<String> = vec![
+                    "Committing configuration to git...".to_string(),
+                    "".to_string(),
+                    "Running: git add . && git commit".to_string(),
+                ];
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Yellow))
+                    .block(Block::new().title("Git Commit"));
+                frame.render_widget(paragraph, area);
+            }
+            ExecutionStatus::GitComplete => {
+                let text: Vec<String> = vec![
+                    "✓ Git commit successful".to_string(),
+                    "".to_string(),
+                    "Starting NixOS rebuild...".to_string(),
+                ];
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Green))
+                    .block(Block::new().title("Git Complete"));
+                frame.render_widget(paragraph, area);
+            }
+            ExecutionStatus::Rebuilding { phase, progress } => {
+                let phase_str = match phase.as_str() {
+                    "Downloading" => "📥 Downloading packages",
+                    "Building" => "🔨 Building configuration",
+                    "Activating" => "⚡ Activating configuration",
+                    _ => &phase,
+                };
+                
+                let progress_str = progress.as_ref().map(|s| s.as_str()).unwrap_or("");
+                
+                let text: Vec<String> = vec![
+                    "Applying system configuration...".to_string(),
+                    "".to_string(),
+                    format!("Phase: {}", phase_str),
+                    progress_str.to_string(),
+                    "".to_string(),
+                    "This may take several minutes.".to_string(),
+                ];
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Cyan))
+                    .block(Block::new().title("Rebuilding"));
+                frame.render_widget(paragraph, area);
+            }
+            ExecutionStatus::Success => {
+                let text: Vec<String> = vec![
+                    "✓ Configuration applied successfully!".to_string(),
+                    "".to_string(),
+                    format!("System '{}' has been configured.", hostname),
+                    "".to_string(),
+                    "Press ENTER to continue.".to_string(),
+                ];
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Green))
+                    .block(Block::new().title("Success"));
+                frame.render_widget(paragraph, area);
+            }
+            ExecutionStatus::Failed { error, can_rollback, previous_generation } => {
+                let rollback_text = if *can_rollback {
+                    format!("Press 'r' to rollback to generation {}.", previous_generation.unwrap_or(0))
+                } else {
+                    "Rollback not available (no previous generation).".to_string()
+                };
+                
+                let text: Vec<String> = vec![
+                    "✗ Configuration failed".to_string(),
+                    "".to_string(),
+                    format!("Error: {}", error),
+                    "".to_string(),
+                    rollback_text,
+                    "".to_string(),
+                    "Press 'c' to continue anyway (stay on current system).".to_string(),
+                    "Press ESC to go back.".to_string(),
+                ];
+                let paragraph = Paragraph::new(text.join("\n"))
+                    .style(Style::default().fg(Color::Red))
+                    .block(Block::new().title("Failed"));
+                frame.render_widget(paragraph, area);
+            }
+        }
+    }
+    
+    fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
+        if let Event::Key(key) = event {
+            match key.code {
+                crossterm::event::KeyCode::Enter => {
+                    if self.status == ExecutionStatus::Idle {
+                        // Start execution
+                        self.status = ExecutionStatus::GitCommitting;
+                        // TODO: Execute git commit then nixos-rebuild
+                    } else if self.status == ExecutionStatus::Success {
+                        state.mark_step_complete();
+                        state.go_next()?; // Go to Completion step
+                    }
+                }
+                crossterm::event::KeyCode::Esc => {
+                    if self.status == ExecutionStatus::Idle {
+                        state.go_back();
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+    
+    fn validate(&self, _state: &WizardState) -> Result<(), String> {
+        Ok(())
+    }
+    
+    fn is_complete(&self, state: &WizardState) -> bool {
+        self.status == ExecutionStatus::Success && state.is_current_step_complete()
+    }
+}
+
+/// Completion step - shows success message and next steps
+pub struct CompletionStep;
+
+impl CompletionStep {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl WizardStep for CompletionStep {
+    fn title(&self) -> &'static str {
+        "Complete"
+    }
+    
+    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
+        let hostname = state.hostname.as_deref().unwrap_or("unknown");
+        let username = state.username.as_deref().unwrap_or("unknown");
+        
+        let text: Vec<String> = vec![
+            "✓ Installation Complete!".to_string(),
+            "".to_string(),
+            format!("Your NixOS system '{}' has been configured.", hostname),
+            format!("User '{}' has been set up with Niri and Noctalia.", username),
+            "".to_string(),
+            "Next Steps:".to_string(),
+            "1. Log out and log back in (or restart)".to_string(),
+            "2. Select 'Niri' from the display manager".to_string(),
+            "3. Your Noctalia shell will be ready!".to_string(),
+            "".to_string(),
+            "Configuration is tracked in git at:".to_string(),
+            "  ./milos-output".to_string(),
+            "".to_string(),
+            "Press Enter to exit the installer.".to_string(),
+        ];
+        
+        let paragraph = Paragraph::new(text.join("\n"))
+            .style(Style::default().fg(Color::Green))
+            .block(Block::new().title("Installation Complete"));
+        
+        frame.render_widget(paragraph, area);
+    }
+    
+    fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
+        if let Event::Key(key) = event {
+            if key.code == crossterm::event::KeyCode::Enter {
+                state.mark_step_complete();
+                // Wizard loop will exit since all steps complete
+            }
+        }
+        Ok(())
+    }
+    
+    fn validate(&self, _state: &WizardState) -> Result<(), String> {
+        Ok(())
+    }
+    
+    fn is_complete(&self, state: &WizardState) -> bool {
+        state.is_current_step_complete()
+    }
 }

@@ -11,7 +11,9 @@ pub enum Step {
     Account,
     Paths,
     Summary,
-    Generate,  // NEW: Configuration generation step
+    Generate,  // Configuration generation step
+    Execution,  // Run git commit and nixos-rebuild
+    Completion,  // Final success screen
 }
 
 impl Step {
@@ -25,6 +27,8 @@ impl Step {
             Step::Paths => "Paths",
             Step::Summary => "Review",
             Step::Generate => "Generate Configuration",
+            Step::Execution => "Apply Configuration",
+            Step::Completion => "Complete",
         }
     }
 
@@ -38,6 +42,8 @@ impl Step {
             Step::Paths => 4,
             Step::Summary => 5,
             Step::Generate => 6,
+            Step::Execution => 7,
+            Step::Completion => 8,
         }
     }
 
@@ -51,6 +57,8 @@ impl Step {
             Step::Paths,
             Step::Summary,
             Step::Generate,
+            Step::Execution,
+            Step::Completion,
         ]
     }
 }
