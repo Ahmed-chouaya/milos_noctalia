@@ -12,6 +12,9 @@ pub mod noctalia;
 pub mod niri;
 pub mod nixconf;
 
+pub mod validate;
+pub mod write;
+
 pub use self::error::GeneratorError;
 pub use self::context::UserConfig;
 

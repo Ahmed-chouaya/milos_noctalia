@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use crate::generator::{Generator, GeneratedFile, GeneratorError};
 use crate::generator::context::UserConfig;
+use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
 #[template(path = "nix.conf")]
@@ -17,6 +18,19 @@ struct NixConfContext {
 
 #[derive(Debug)]
 pub struct NixConfGenerator;
+
+impl NixConfGenerator {
+    /// Validate generated nix.conf content.
+    ///
+    /// # Arguments
+    /// * `content` - The generated content to validate.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if no unsubstituted placeholders remain.
+    pub fn validate(&self, content: &str) -> Result<(), GeneratorError> {
+        validate_no_unsubstituted(content, "nix.conf")
+    }
+}
 
 impl Generator for NixConfGenerator {
     fn generate(&self, config: &UserConfig) -> Result<Vec<GeneratedFile>, GeneratorError> {

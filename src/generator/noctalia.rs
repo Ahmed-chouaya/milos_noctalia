@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use crate::generator::{Generator, GeneratedFile, GeneratorError};
 use crate::generator::context::UserConfig;
+use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
 #[template(path = "noctalia.nix")]
@@ -17,6 +18,19 @@ struct NoctaliaContext {
 
 #[derive(Debug)]
 pub struct NoctaliaGenerator;
+
+impl NoctaliaGenerator {
+    /// Validate generated noctalia.nix content.
+    ///
+    /// # Arguments
+    /// * `content` - The generated content to validate.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if no unsubstituted placeholders remain.
+    pub fn validate(&self, content: &str) -> Result<(), GeneratorError> {
+        validate_no_unsubstituted(content, "noctalia.nix")
+    }
+}
 
 impl Generator for NoctaliaGenerator {
     fn generate(&self, config: &UserConfig) -> Result<Vec<GeneratedFile>, GeneratorError> {

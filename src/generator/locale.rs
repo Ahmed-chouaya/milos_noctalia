@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use crate::generator::{Generator, GeneratedFile, GeneratorError};
 use crate::generator::context::UserConfig;
+use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
 #[template(path = "locale.nix")]
@@ -17,6 +18,19 @@ struct LocaleContext {
 
 #[derive(Debug)]
 pub struct LocaleGenerator;
+
+impl LocaleGenerator {
+    /// Validate generated locale.nix content.
+    ///
+    /// # Arguments
+    /// * `content` - The generated content to validate.
+    ///
+    /// # Returns
+    /// Returns `Ok(())` if no unsubstituted placeholders remain.
+    pub fn validate(&self, content: &str) -> Result<(), GeneratorError> {
+        validate_no_unsubstituted(content, "locale.nix")
+    }
+}
 
 impl Generator for LocaleGenerator {
     fn generate(&self, config: &UserConfig) -> Result<Vec<GeneratedFile>, GeneratorError> {
