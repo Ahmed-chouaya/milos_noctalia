@@ -103,6 +103,158 @@ impl WizardStep for WelcomeStep {
     }
 }
 
+/// Timezone selection step with region/city hierarchy and type-to-filter
+pub struct TimezoneStep {
+    selected: usize,
+    filter: String,
+    filtered_timezones: Vec<&'static str>,
+}
+
+static TIMEZONES: &[&str] = &[
+    // America
+    "America/New_York", "America/Los_Angeles", "America/Chicago",
+    "America/Denver", "America/Sao_Paulo",
+    // Europe
+    "Europe/London", "Europe/Berlin", "Europe/Paris", "Europe/Rome",
+    "Europe/Madrid", "Europe/Amsterdam", "Europe/Moscow",
+    // Asia
+    "Asia/Tokyo", "Asia/Shanghai", "Asia/Dubai", "Asia/Singapore",
+    "Asia/Kolkata", "Asia/Seoul",
+    // Oceania
+    "Australia/Sydney", "Australia/Melbourne", "Pacific/Auckland",
+];
+
+impl TimezoneStep {
+    pub fn new() -> Self {
+        Self {
+            selected: 0,
+            filter: String::new(),
+            filtered_timezones: TIMEZONES.to_vec(),
+        }
+    }
+
+    fn apply_filter(&mut self) {
+        if self.filter.is_empty() {
+            self.filtered_timezones = TIMEZONES.to_vec();
+        } else {
+            self.filtered_timezones = TIMEZONES
+                .iter()
+                .filter(|&&tz| tz.to_lowercase().contains(&self.filter.to_lowercase()))
+                .copied()
+                .collect();
+        }
+        // Reset selection to top when filter changes
+        if self.selected >= self.filtered_timezones.len() {
+            self.selected = 0;
+        }
+    }
+}
+
+impl WizardStep for TimezoneStep {
+    fn title(&self) -> &'static str {
+        "Timezone"
+    }
+
+    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+        // Show filter input at top
+        let filter_text = format!("Filter: {}", self.filter);
+        let filter_cursor = if !self.filter.is_empty() {
+            " ←"
+        } else {
+            ""
+        };
+        let filter_para = Paragraph::new(format!("{}{}", filter_text, filter_cursor))
+            .style(Style::default().fg(Color::Cyan))
+            .block(Block::borders().title("Type to filter"));
+
+        // Calculate list area (below filter)
+        let list_height = area.height.saturating_sub(3);
+        let list_area = Rect::new(area.x, area.y + 2, area.width, list_height);
+
+        let items: Vec<ListItem> = self.filtered_timezones
+            .iter()
+            .enumerate()
+            .map(|(i, &tz)| {
+                let prefix = if i == self.selected { "▶ " } else { "  " };
+                let suffix = if Some(tz) == state.timezone.as_deref() { " ◀" } else { "" };
+                ListItem::new(format!("{}{}{}", prefix, tz, suffix))
+            })
+            .collect();
+
+        let list = List::new(items)
+            .block(Block::borders().title("Select Timezone"))
+            .style(Style::default().fg(Color::White));
+
+        frame.render_widget(filter_para, Rect::new(area.x, area.y, area.width, 2));
+        frame.render_widget(list, list_area);
+
+        // Show match count if filter is active
+        if !self.filter.is_empty() {
+            let match_count = format!("Showing {} of {} timezones", self.filtered_timezones.len(), TIMEZONES.len());
+            let count_para = Paragraph::new(match_count)
+                .style(Style::default().fg(Color::DarkGray))
+                .block(Block::borders().borders(Borders::NONE));
+
+            let count_area = Rect::new(area.x, area.y + area.height - 1, area.width, 1);
+            frame.render_widget(count_para, count_area);
+        }
+    }
+
+    fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
+        if let Event::Key(key) = event {
+            match key.code {
+                crossterm::event::KeyCode::Up => {
+                    if self.selected > 0 {
+                        self.selected -= 1;
+                    }
+                }
+                crossterm::event::KeyCode::Down => {
+                    if self.selected < self.filtered_timezones.len() - 1 {
+                        self.selected += 1;
+                    }
+                }
+                crossterm::event::KeyCode::Enter => {
+                    if !self.filtered_timezones.is_empty() {
+                        state.timezone = Some(self.filtered_timezones[self.selected].to_string());
+                        state.mark_step_complete();
+                        state.go_next()?;
+                    }
+                }
+                crossterm::event::KeyCode::Char(c) => {
+                    self.filter.push(c);
+                    self.apply_filter();
+                }
+                crossterm::event::KeyCode::Backspace => {
+                    self.filter.pop();
+                    self.apply_filter();
+                }
+                crossterm::event::KeyCode::Esc => {
+                    if self.filter.is_empty() {
+                        state.go_back()?;
+                    } else {
+                        self.filter.clear();
+                        self.apply_filter();
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    fn validate(&self, state: &WizardState) -> Result<(), String> {
+        if state.timezone.is_some() {
+            Ok(())
+        } else {
+            Err("Please select a timezone".to_string())
+        }
+    }
+
+    fn is_complete(&self, state: &WizardState) -> bool {
+        state.timezone.is_some()
+    }
+}
+
 /// Locale selection step
 pub struct LocaleStep {
     selected: usize,
