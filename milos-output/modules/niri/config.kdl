@@ -1,0 +1,9 @@
+;; Niri configuration for testuser
+
+;; Screenshots
+(screenshot
+    (dir "~/Pictures/Screenshots")
+)
+
+;; Focus
+(focus new-on-top)
