@@ -23,6 +23,8 @@ echo ""
 if [[ ! -f "$BINARY" ]]; then
     echo "Building milos_niri..."
     echo ""
+    echo "  Note: First build downloads ~500MB (cached for next time)"
+    echo ""
 
     nix-shell -p cargo rustc rustfmt git --run "
         cd '$SCRIPT_DIR'
