@@ -13,78 +13,9 @@
 | Attribute | Value |
 |-----------|-------|
 | **Phase** | Phase 3: Config Generation (In Progress) |
-| **Next Action** | Execute 03-03 plan |
-| **Status** | 🟡 03-02 Complete |
-| **Progress** | [████████████████████████░░░░░░░] 62.5% |
-
-## Performance Metrics
-
-| Metric | Target | Current |
-|--------|--------|---------|
-| v1 Requirements Mapped | 32/32 | 32/32 ✓ |
-| Phases Defined | 4 | 4 ✓ |
-| Success Criteria | 20 total | 20 defined ✓ |
-| Roadmap Coverage | 100% | 100% ✓ |
-| Requirements Complete | 18/32 | TUI-01-08, INP-01-10 ✓ |
-
-## Accumulated Context
-
-### Key Decisions
-
-| Decision | Rationale | Status |
-|----------|-----------|--------|
-| 4-phase structure | Natural workflow boundary: TUI → Input → Generate → Execute | ✓ Approved |
-| Phase 1: TUI Foundation | Foundation must exist before user-facing features | ✓ Approved |
-| Phase 2: Input Collection | Wizard collects all user data | ✓ Approved |
-| Phase 3: Config Generation | Templates substitute collected values | ✓ Approved |
-| Phase 4: Execution | Runs nixos-rebuild with error handling | ✓ Approved |
-| Phase 2 step structure | Welcome → Timezone → Keyboard → Account → Paths → Summary | ✓ Approved |
-| AccountStep fields | hostname, username, full_name, git_username, git_email | ✓ Approved |
-| Type-to-filter UX | Immediate filtering on character input | ✓ Approved |
-| Validation style | Real-time inline (red/green) + summary on submit | ✓ Approved |
-| Sidebar pattern | Review-only, shows ✓/▶/○ markers | ✓ Approved |
-
-### Research Insights (from SUMMARY.md)
-
-**Architecture Pattern:** Four-layer separation (TUI → State → Generator → Executor)
-
-**Critical Pitfalls:**
-- SSH connection loss after kexec (not applicable - reconfigure mode only)
-- Device naming instability (use /dev/disk/by-id/*)
-- Secrets exposure in nix store (Git credentials are safe, SSH keys need care)
-- Network connectivity detection (implement robust fallback)
-
-**Key Technologies:**
-- Ratatui 0.30.0 for TUI
-- Crossterm 0.29.0 for terminal backend
-- Askama 0.15 for compile-time templates
-- Color-eyre 0.6 for error handling
-- Atomicwrites 0.4 for safe file operations
-- Thiserror 1.0 for error type definitions
-
-### Current Phase Context
-
-**Phase 2 Goal:** Complete user data gathering wizard
-
-**Requirements for Phase 2:**
-- INP-01: Hostname input with validation
-- INP-02: Username input with validation
-- INP-03: Full name input (free text)
-- INP-04: Git username input (for commit author)
-- INP-05: Git email input (for commit author)
-- INP-06: Timezone selection (region/city list)
-- INP-07: Keyboard layout selection (common layouts with type-to-filter)
-- INP-08: Wallpaper directory path
-- INP-09: Avatar image path (optional)
-- INP-10: Screenshot path
-
-**Success Criteria for Phase 2:**
-1. Hostname input with validation
-2. Username input with validation
-3. Personal info collected (full name, Git credentials)
-4. Timezone selection works
-5. Keyboard layout selection works
-6. Path inputs complete
+| **Next Action** | Execute 03-04 plan |
+| **Status** | 🟢 03-03 Complete |
+| **Progress** | [████████████████████████████░░░] 75% |
 
 ## Session Continuity
 
@@ -104,11 +35,16 @@
 - Executed Phase 3 plan 03-02: Created Askama templates and generators
 - Created 7 templates: flake.nix, users.nix, git.nix, locale.nix, noctalia.nix, niri/config.kdl, nix.conf
 - Implemented Generator trait for all 7 templates with Askama derive macros
+- Executed Phase 3 plan 03-03: Validation and atomic file writing utilities
+- Created validate.rs with validate_no_unsubstituted() and validate_nix_syntax()
+- Created write.rs with write_config_atomically() and write_config()
+- Added validate() method to all 7 generators
+- Added regex and tempfile dependencies for validation tests
 
 ### What Needs To Happen Next
 
-1. Execute Phase 3 plan 03-03: Validation and orchestration layer
-2. Complete remaining Phase 3 plans (03-04 through 03-06)
+1. Execute Phase 3 plan 03-04: Generator orchestration
+2. Execute remaining Phase 3 plans (03-05, 03-06)
 3. Validate all 9 configuration requirements (CFG-01 through CFG-09)
 4. Proceed to Phase 4 (`/gsd/plan-phase 4`) - Execution
 
