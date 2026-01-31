@@ -6,16 +6,16 @@
 
 **Core Value:** Users can reproduce this exact desktop environment (Niri compositor + Noctalia shell + dev tools) on any NixOS machine in under 10 minutes through an interactive guided installer.
 
-**Current Focus:** Roadmap approved, ready to plan Phase 1
+**Current Focus:** Phase 2 Input Collection complete, ready for Phase 3
 
 ## Current Position
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | Phase 2: Input Collection (Planning) |
-| **Next Action** | Execute Phase 2 (`/gsd/execute-phase 2`) |
-| **Status** | 🟢 Phase 1 Complete, Planning Phase 2 |
-| **Progress** | [████████████████████░░░░░░] 25% |
+| **Phase** | Phase 2: Input Collection (Complete) |
+| **Next Action** | Proceed to Phase 3 (`/gsd/plan-phase 3`) |
+| **Status** | 🟢 Phase 2 Complete |
+| **Progress** | [████████████████████████████████████] 50% |
 
 ## Performance Metrics
 
@@ -25,6 +25,7 @@
 | Phases Defined | 4 | 4 ✓ |
 | Success Criteria | 20 total | 20 defined ✓ |
 | Roadmap Coverage | 100% | 100% ✓ |
+| Requirements Complete | 18/32 | TUI-01-08, INP-01-10 ✓ |
 
 ## Accumulated Context
 
@@ -61,46 +62,49 @@
 
 ### Current Phase Context
 
-**Phase 1 Goal:** Working installer shell with navigation and error handling
+**Phase 2 Goal:** Complete user data gathering wizard
 
-**Requirements for Phase 1:**
-- TUI-01: Initialize Ratatui project structure with Cargo
-- TUI-02: Set up Crossterm event loop for keyboard input
-- TUI-03: Implement centralized state management store
-- TUI-04: Create wizard flow with steps and navigation
-- TUI-05: Add color-eyre error handling with beautiful backtraces
-- TUI-06: Display MILOS pixel art logo on installer startup screen
-- TUI-07: Pixel art logo with color scheme matching Noctalia theme
-- TUI-08: Logo animation effect (optional polish)
+**Requirements for Phase 2:**
+- INP-01: Hostname input with validation
+- INP-02: Username input with validation
+- INP-03: Full name input (free text)
+- INP-04: Git username input (for commit author)
+- INP-05: Git email input (for commit author)
+- INP-06: Timezone selection (region/city list)
+- INP-07: Keyboard layout selection (common layouts with type-to-filter)
+- INP-08: Wallpaper directory path
+- INP-09: Avatar image path (optional)
+- INP-10: Screenshot path
 
-**Success Criteria for Phase 1:**
-1. Installer launches with pixel art logo
-2. Keyboard navigation works (arrow keys, Tab, Enter, Escape)
-3. State persists across navigation
-4. Errors display beautifully with color-eyre
-5. Logo animation complete (TUI-08)
+**Success Criteria for Phase 2:**
+1. Hostname input with validation
+2. Username input with validation
+3. Personal info collected (full name, Git credentials)
+4. Timezone selection works
+5. Keyboard layout selection works
+6. Path inputs complete
 
 ## Session Continuity
 
 ### What Was Just Done
 
-- Extracted 32 v1 requirements from REQUIREMENTS.md
-- Derived 4-phase structure from workflow requirements
-- Created observable success criteria for each phase
-- Validated 100% coverage (32/32 requirements mapped)
-- Wrote ROADMAP.md with full phase details
-- Wrote STATE.md with project context
+- Executed all 4 Phase 2 plans (02-01 through 02-04)
+- Implemented AccountStep with 5 fields and real-time validation
+- Implemented TimezoneStep and KeyboardStep with type-to-filter
+- Implemented PathsStep with 3 path configuration fields
+- Polished sidebar, validation summary, and Summary step
+- Updated REQUIREMENTS.md to mark INP-01 through INP-10 as complete
 
 ### What Needs To Happen Next
 
-1. Execute Phase 2 plans (02-01 through 02-04)
-2. Validate all 10 input requirements work correctly
-3. Proceed to Phase 3 (`/gsd/plan-phase 3`)
-4. Update REQUIREMENTS.md tracebility to mark INP-01 through INP-10 as complete
+1. Plan Phase 3 (`/gsd/plan-phase 3`) - Config Generation
+2. Implement template substitution for flake and module files
+3. Validate all 9 configuration requirements (CFG-01 through CFG-09)
+4. Proceed to Phase 4 (`/gsd/plan-phase 4`) - Execution
 
 ### Open Questions
 
-None - Phase 2 plans created, ready for execution.
+None - Phase 2 complete, ready for Phase 3 planning.
 
 ---
 

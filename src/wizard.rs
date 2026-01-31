@@ -255,80 +255,7 @@ impl WizardStep for TimezoneStep {
     }
 }
 
-/// Locale selection step
-pub struct LocaleStep {
-    selected: usize,
-    locales: Vec<&'static str>,
-}
 
-impl LocaleStep {
-    pub fn new() -> Self {
-        Self {
-            selected: 0,
-            locales: vec!["en_US.UTF-8", "en_GB.UTF-8", "de_DE.UTF-8", "fr_FR.UTF-8", "es_ES.UTF-8"],
-        }
-    }
-}
-
-impl WizardStep for LocaleStep {
-    fn title(&self) -> &'static str {
-        "Language & Locale"
-    }
-
-    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
-        let items: Vec<ListItem> = self.locales
-            .iter()
-            .enumerate()
-            .map(|(i, &locale)| {
-                let prefix = if i == self.selected { "▶ " } else { "  " };
-                let suffix = if locale == state.locale.as_deref().unwrap_or("") { " ◀" } else { "" };
-                ListItem::new(format!("{}{}{}", prefix, locale, suffix))
-            })
-            .collect();
-
-        let list = List::new(items)
-            .block(Block::borders().title("Select Language & Locale"))
-            .style(Style::default().fg(Color::White));
-
-        frame.render_widget(list, area);
-    }
-
-    fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
-        if let Event::Key(key) = event {
-            match key.code {
-                crossterm::event::KeyCode::Up => {
-                    if self.selected > 0 {
-                        self.selected -= 1;
-                    }
-                }
-                crossterm::event::KeyCode::Down => {
-                    if self.selected < self.locales.len() - 1 {
-                        self.selected += 1;
-                    }
-                }
-                crossterm::event::KeyCode::Enter => {
-                    state.locale = Some(self.locales[self.selected].to_string());
-                    state.mark_step_complete();
-                    state.go_next()?;
-                }
-                _ => {}
-            }
-        }
-        Ok(())
-    }
-
-    fn validate(&self, state: &WizardState) -> Result<(), String> {
-        if state.locale.is_some() {
-            Ok(())
-        } else {
-            Err("Please select a locale".to_string())
-        }
-    }
-
-    fn is_complete(&self, state: &WizardState) -> bool {
-        state.locale.is_some()
-    }
-}
 
 /// Keyboard layout selection step with type-to-filter
 pub struct KeyboardStep {
@@ -492,47 +419,96 @@ impl WizardStep for KeyboardStep {
     }
 }
 
-/// User creation step
-pub struct UserStep {
-    focus_field: usize, // 0: hostname, 1: username
+/// Account creation step with hostname, username, full name, git config
+pub struct AccountStep {
+    focus_field: usize, // 0: hostname, 1: username, 2: full_name, 3: git_username, 4: git_email
     hostname_buffer: String,
     username_buffer: String,
+    full_name_buffer: String,
+    git_username_buffer: String,
+    git_email_buffer: String,
 }
 
-impl UserStep {
+impl AccountStep {
     pub fn new() -> Self {
         Self {
             focus_field: 0,
             hostname_buffer: String::new(),
             username_buffer: String::new(),
+            full_name_buffer: String::new(),
+            git_username_buffer: String::new(),
+            git_email_buffer: String::new(),
+        }
+    }
+
+    /// Initialize buffers from state (for returning to step)
+    pub fn from_state(state: &WizardState) -> Self {
+        Self {
+            focus_field: 0,
+            hostname_buffer: state.hostname.clone().unwrap_or_default(),
+            username_buffer: state.username.clone().unwrap_or_default(),
+            full_name_buffer: state.full_name.clone().unwrap_or_default(),
+            git_username_buffer: state.git_username.clone().unwrap_or_default(),
+            git_email_buffer: state.git_email.clone().unwrap_or_default(),
         }
     }
 }
 
-impl WizardStep for UserStep {
+impl WizardStep for AccountStep {
     fn title(&self) -> &'static str {
-        "User Account"
+        "Account"
     }
 
     fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
-        let hostname = state.hostname.as_deref().unwrap_or("");
-        let username = state.username.as_deref().unwrap_or("");
+        // Use buffers if available, otherwise fall back to state
+        let hostname = if !self.hostname_buffer.is_empty() {
+            &self.hostname_buffer
+        } else {
+            state.hostname.as_deref().unwrap_or("")
+        };
+        let username = if !self.username_buffer.is_empty() {
+            &self.username_buffer
+        } else {
+            state.username.as_deref().unwrap_or("")
+        };
+        let full_name = if !self.full_name_buffer.is_empty() {
+            &self.full_name_buffer
+        } else {
+            state.full_name.as_deref().unwrap_or("")
+        };
+        let git_username = if !self.git_username_buffer.is_empty() {
+            &self.git_username_buffer
+        } else {
+            state.git_username.as_deref().unwrap_or("")
+        };
+        let git_email = if !self.git_email_buffer.is_empty() {
+            &self.git_email_buffer
+        } else {
+            state.git_email.as_deref().unwrap_or("")
+        };
 
         let hostname_prefix = if self.focus_field == 0 { "▶ " } else { "  " };
         let username_prefix = if self.focus_field == 1 { "▶ " } else { "  " };
+        let full_name_prefix = if self.focus_field == 2 { "▶ " } else { "  " };
+        let git_username_prefix = if self.focus_field == 3 { "▶ " } else { "  " };
+        let git_email_prefix = if self.focus_field == 4 { "▶ " } else { "  " };
 
         let text = vec![
+            "Configure your account settings:",
             "",
             &format!("{}Hostname: {}", hostname_prefix, hostname),
             &format!("{}Username: {}", username_prefix, username),
+            &format!("{}Full Name: {}", full_name_prefix, full_name),
+            &format!("{}Git Username: {}", git_username_prefix, git_username),
+            &format!("{}Git Email: {}", git_email_prefix, git_email),
             "",
-            "  Use arrow keys to select fields, type to enter values,",
-            "  and press Enter when both fields are complete.",
+            "Use arrow keys or Tab to navigate between fields.",
+            "Press Enter to save each field and advance.",
         ];
 
         let paragraph = Paragraph::new(text.join("\n"))
             .style(Style::default().fg(Color::White))
-            .block(Block::borders().title("User Account"));
+            .block(Block::borders().title("Account"));
 
         frame.render_widget(paragraph, area);
     }
@@ -546,32 +522,74 @@ impl WizardStep for UserStep {
                     }
                 }
                 crossterm::event::KeyCode::Down | crossterm::event::KeyCode::BackTab => {
-                    if self.focus_field < 1 {
+                    if self.focus_field < 4 {
                         self.focus_field += 1;
                     }
                 }
                 crossterm::event::KeyCode::Enter => {
-                    if self.focus_field == 0 {
-                        state.hostname = Some(self.hostname_buffer.clone());
-                        self.focus_field = 1;
-                    } else {
-                        state.username = Some(self.username_buffer.clone());
-                        state.mark_step_complete();
-                        state.go_next()?;
+                    // Save current field to state
+                    match self.focus_field {
+                        0 => {
+                            state.hostname = Some(self.hostname_buffer.clone());
+                            self.focus_field = 1;
+                        }
+                        1 => {
+                            state.username = Some(self.username_buffer.clone());
+                            self.focus_field = 2;
+                        }
+                        2 => {
+                            state.full_name = Some(self.full_name_buffer.clone());
+                            self.focus_field = 3;
+                        }
+                        3 => {
+                            state.git_username = Some(self.git_username_buffer.clone());
+                            self.focus_field = 4;
+                        }
+                        4 => {
+                            state.git_email = Some(self.git_email_buffer.clone());
+                            // Check if all required fields are valid
+                            if state.hostname.is_some() 
+                                && state.username.is_some()
+                                && state.full_name.is_some()
+                                && state.git_username.is_some()
+                                && state.git_email.is_some()
+                            {
+                                state.mark_step_complete();
+                                state.go_next()?;
+                            }
+                        }
+                        _ => {}
                     }
                 }
                 crossterm::event::KeyCode::Char(c) => {
-                    if self.focus_field == 0 {
-                        self.hostname_buffer.push(c);
-                    } else {
-                        self.username_buffer.push(c);
+                    match self.focus_field {
+                        0 => self.hostname_buffer.push(c),
+                        1 => self.username_buffer.push(c),
+                        2 => self.full_name_buffer.push(c),
+                        3 => self.git_username_buffer.push(c),
+                        4 => self.git_email_buffer.push(c),
+                        _ => {}
                     }
                 }
                 crossterm::event::KeyCode::Backspace => {
-                    if self.focus_field == 0 {
-                        self.hostname_buffer.pop();
-                    } else {
-                        self.username_buffer.pop();
+                    match self.focus_field {
+                        0 => self.hostname_buffer.pop(),
+                        1 => self.username_buffer.pop(),
+                        2 => self.full_name_buffer.pop(),
+                        3 => self.git_username_buffer.pop(),
+                        4 => self.git_email_buffer.pop(),
+                        _ => {}
+                    }
+                }
+                crossterm::event::KeyCode::Ctrl('u') => {
+                    // Clear current field
+                    match self.focus_field {
+                        0 => self.hostname_buffer.clear(),
+                        1 => self.username_buffer.clear(),
+                        2 => self.full_name_buffer.clear(),
+                        3 => self.git_username_buffer.clear(),
+                        4 => self.git_email_buffer.clear(),
+                        _ => {}
                     }
                 }
                 _ => {}
@@ -587,24 +605,202 @@ impl WizardStep for UserStep {
         if state.username.is_none() {
             return Err("Username is required".to_string());
         }
-
-        if let Some(hostname) = &state.hostname {
-            if hostname.contains(' ') {
-                return Err("Hostname cannot contain spaces".to_string());
-            }
+        if state.full_name.is_none() {
+            return Err("Full name is required".to_string());
         }
-
-        if let Some(username) = &state.username {
-            if !username.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_') {
-                return Err("Username must be lowercase alphanumeric".to_string());
-            }
+        if state.git_username.is_none() {
+            return Err("Git username is required".to_string());
         }
-
+        if state.git_email.is_none() {
+            return Err("Git email is required".to_string());
+        }
         Ok(())
     }
 
     fn is_complete(&self, state: &WizardState) -> bool {
-        state.hostname.is_some() && state.username.is_some()
+        state.hostname.is_some() 
+            && state.username.is_some() 
+            && state.full_name.is_some()
+            && state.git_username.is_some()
+            && state.git_email.is_some()
+    }
+}
+
+/// Path configuration step for Noctalia
+pub struct PathsStep {
+    focus_field: usize,  // 0: wallpaper_dir, 1: avatar_path, 2: screenshot_dir
+    wallpaper_buffer: String,
+    avatar_buffer: String,
+    screenshot_buffer: String,
+}
+
+impl PathsStep {
+    pub fn new() -> Self {
+        Self {
+            focus_field: 0,
+            wallpaper_buffer: String::new(),
+            avatar_buffer: String::new(),
+            screenshot_buffer: String::new(),
+        }
+    }
+
+    /// Initialize buffers from state (for returning to step)
+    pub fn from_state(state: &WizardState) -> Self {
+        Self {
+            focus_field: 0,
+            wallpaper_buffer: state.wallpaper_dir.clone().unwrap_or_default(),
+            avatar_buffer: state.avatar_path.clone().unwrap_or_default(),
+            screenshot_buffer: state.screenshot_dir.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl WizardStep for PathsStep {
+    fn title(&self) -> &'static str {
+        "Paths & Directories"
+    }
+
+    fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
+        // Use buffers if available, otherwise fall back to state defaults
+        let wallpaper = if !self.wallpaper_buffer.is_empty() {
+            &self.wallpaper_buffer
+        } else {
+            state.wallpaper_dir.as_deref().unwrap_or("")
+        };
+        let avatar = if !self.avatar_buffer.is_empty() {
+            &self.avatar_buffer
+        } else {
+            state.avatar_path.as_deref().unwrap_or("")
+        };
+        let screenshot = if !self.screenshot_buffer.is_empty() {
+            &self.screenshot_buffer
+        } else {
+            state.screenshot_dir.as_deref().unwrap_or("")
+        };
+
+        let wallpaper_prefix = if self.focus_field == 0 { "▶ " } else { "  " };
+        let avatar_prefix = if self.focus_field == 1 { "▶ " } else { "  " };
+        let screenshot_prefix = if self.focus_field == 2 { "▶ " } else { "  " };
+
+        // Check if avatar is optional (empty or None)
+        let avatar_display = if avatar.is_empty() {
+            "(none)".to_string()
+        } else {
+            avatar.to_string()
+        };
+
+        let text = vec![
+            "Configure paths for Noctalia:",
+            "",
+            &format!("{}Wallpaper Directory: {}", wallpaper_prefix, wallpaper),
+            &format!("{}Avatar Image: {} (optional)", avatar_prefix, avatar_display),
+            &format!("{}Screenshot Directory: {}", screenshot_prefix, screenshot),
+            "",
+            "These paths are used by Noctalia for:",
+            "  • Finding wallpaper images",
+            "  • Displaying your avatar in UI",
+            "  • Saving screenshots",
+            "",
+            "Use arrow keys or Tab to navigate between fields.",
+            "Press Enter to save each field and advance.",
+        ];
+
+        let paragraph = Paragraph::new(text.join("\n"))
+            .style(Style::default().fg(Color::White))
+            .block(Block::borders().title("Paths & Directories"));
+
+        frame.render_widget(paragraph, area);
+    }
+
+    fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
+        if let Event::Key(key) = event {
+            match key.code {
+                crossterm::event::KeyCode::Up | crossterm::event::KeyCode::Tab => {
+                    if self.focus_field > 0 {
+                        self.focus_field -= 1;
+                    }
+                }
+                crossterm::event::KeyCode::Down | crossterm::event::KeyCode::BackTab => {
+                    if self.focus_field < 2 {
+                        self.focus_field += 1;
+                    }
+                }
+                crossterm::event::KeyCode::Enter => {
+                    // Save current field to state
+                    match self.focus_field {
+                        0 => {
+                            state.wallpaper_dir = Some(self.wallpaper_buffer.clone());
+                            self.focus_field = 1;
+                        }
+                        1 => {
+                            // Avatar is optional - can be empty/None
+                            if self.avatar_buffer.is_empty() {
+                                state.avatar_path = None;
+                            } else {
+                                state.avatar_path = Some(self.avatar_buffer.clone());
+                            }
+                            self.focus_field = 2;
+                        }
+                        2 => {
+                            state.screenshot_dir = Some(self.screenshot_buffer.clone());
+                            // Check if required fields are valid
+                            if state.wallpaper_dir.as_ref().map_or(false, |s| !s.is_empty())
+                                && state.screenshot_dir.as_ref().map_or(false, |s| !s.is_empty())
+                            {
+                                state.mark_step_complete();
+                                state.go_next()?;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                crossterm::event::KeyCode::Char(c) => {
+                    match self.focus_field {
+                        0 => self.wallpaper_buffer.push(c),
+                        1 => self.avatar_buffer.push(c),
+                        2 => self.screenshot_buffer.push(c),
+                        _ => {}
+                    }
+                }
+                crossterm::event::KeyCode::Backspace => {
+                    match self.focus_field {
+                        0 => self.wallpaper_buffer.pop(),
+                        1 => self.avatar_buffer.pop(),
+                        2 => self.screenshot_buffer.pop(),
+                        _ => {}
+                    };
+                }
+                crossterm::event::KeyCode::Ctrl('u') => {
+                    // Clear current field
+                    match self.focus_field {
+                        0 => self.wallpaper_buffer.clear(),
+                        1 => self.avatar_buffer.clear(),
+                        2 => self.screenshot_buffer.clear(),
+                        _ => {}
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(())
+    }
+
+    fn validate(&self, state: &WizardState) -> Result<(), String> {
+        // Check required fields
+        if state.wallpaper_dir.is_none() || state.wallpaper_dir.as_ref().map_or(true, |s| s.is_empty()) {
+            return Err("Wallpaper directory is required".to_string());
+        }
+        if state.screenshot_dir.is_none() || state.screenshot_dir.as_ref().map_or(true, |s| s.is_empty()) {
+            return Err("Screenshot directory is required".to_string());
+        }
+        Ok(())
+    }
+
+    fn is_complete(&self, state: &WizardState) -> bool {
+        state.wallpaper_dir.is_some()
+            && state.wallpaper_dir.as_ref().map_or(false, |s| !s.is_empty())
+            && state.screenshot_dir.is_some()
+            && state.screenshot_dir.as_ref().map_or(false, |s| !s.is_empty())
     }
 }
 
@@ -701,12 +897,10 @@ pub fn render_sidebar(frame: &mut Frame<CrosstermBackend<Stdout>>, state: &Wizar
 pub fn create_current_step(step: Step) -> Box<dyn WizardStep> {
     match step {
         Step::Welcome => Box::new(WelcomeStep),
-        Step::Locale => Box::new(LocaleStep::new()),
+        Step::Timezone => Box::new(TimezoneStep::new()),
         Step::Keyboard => Box::new(KeyboardStep::new()),
-        Step::Network => Box::new(WelcomeStep), // Placeholder
-        Step::Disk => Box::new(WelcomeStep),    // Placeholder
-        Step::User => Box::new(UserStep::new()),
-        Step::Packages => Box::new(WelcomeStep), // Placeholder
+        Step::Account => Box::new(AccountStep::new()),
+        Step::Paths => Box::new(PathsStep::new()),
         Step::Summary => Box::new(SummaryStep),
     }
 }

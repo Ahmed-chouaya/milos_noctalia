@@ -62,10 +62,10 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 **Requirements:** INP-01, INP-02, INP-03, INP-04, INP-05, INP-06, INP-07, INP-08, INP-09, INP-10
 
 **Plans:**
-- [ ] 02-01-PLAN.md — Account step: hostname, username, full name, git credentials with validation
-- [ ] 02-02-PLAN.md — Timezone & keyboard selection with type-to-filter
-- [ ] 02-03-PLAN.md — Path configuration: wallpaper, avatar, screenshot paths
-- [ ] 02-04-PLAN.md — Polish: sidebar, validation summary, Summary step
+- [x] 02-01-PLAN.md — Account step: hostname, username, full name, git credentials with validation ✓
+- [x] 02-02-PLAN.md — Timezone & keyboard selection with type-to-filter ✓
+- [x] 02-03-PLAN.md — Path configuration: wallpaper, avatar, screenshot paths ✓
+- [x] 02-04-PLAN.md — Polish: sidebar, validation summary, Summary step ✓
 
 **Success Criteria:**
 

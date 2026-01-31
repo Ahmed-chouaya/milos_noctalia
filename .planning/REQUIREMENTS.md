@@ -1,33 +1,34 @@
 # Requirements: milos_niri - NixOS TUI Installer
 
 **Defined:** 2026-01-31
+**Updated:** 2026-01-31 (Phase 2 complete)
 **Core Value:** Users can reproduce this exact desktop environment (Niri compositor + Noctalia shell + dev tools) on any NixOS machine in under 10 minutes through an interactive guided installer.
 
 ## v1 Requirements
 
 ### TUI Framework
 
-- [ ] **TUI-01**: Initialize Ratatui project structure with Cargo
-- [ ] **TUI-02**: Set up Crossterm event loop for keyboard input
-- [ ] **TUI-03**: Implement centralized state management store
-- [ ] **TUI-04**: Create wizard flow with steps and navigation
-- [ ] **TUI-05**: Add color-eyre error handling with beautiful backtraces
-- [ ] **TUI-06**: Display MILOS pixel art logo on installer startup screen
-- [ ] **TUI-07**: Pixel art logo with color scheme matching Noctalia theme
-- [ ] **TUI-08**: Logo animation effect (optional polish)
+- [x] **TUI-01**: Initialize Ratatui project structure with Cargo ✓ (Phase 1)
+- [x] **TUI-02**: Set up Crossterm event loop for keyboard input ✓ (Phase 1)
+- [x] **TUI-03**: Implement centralized state management store ✓ (Phase 1)
+- [x] **TUI-04**: Create wizard flow with steps and navigation ✓ (Phase 1)
+- [x] **TUI-05**: Add color-eyre error handling with beautiful backtraces ✓ (Phase 1)
+- [x] **TUI-06**: Display MILOS pixel art logo on installer startup screen ✓ (Phase 1)
+- [x] **TUI-07**: Pixel art logo with color scheme matching Noctalia theme ✓ (Phase 1)
+- [x] **TUI-08**: Logo animation effect (optional polish) ✓ (Phase 1)
 
 ### Input Collection
 
-- [ ] **INP-01**: Hostname input with validation (alphanumeric, no spaces)
-- [ ] **INP-02**: Username input with validation (lowercase, alphanumeric)
-- [ ] **INP-03**: Full name input (free text)
-- [ ] **INP-04**: Git username input (for commit author)
-- [ ] **INP-05**: Git email input (for commit author)
-- [ ] **INP-06**: Timezone selection (region/city list)
-- [ ] **INP-07**: Keyboard layout selection (us, fr, etc.)
-- [ ] **INP-08**: Wallpaper directory path (default: ~/Pictures/Wallpapers)
-- [ ] **INP-09**: Avatar image path (optional, default: none)
-- [ ] **INP-10**: Screenshot path (default: ~/Pictures/Screenshots)
+- [x] **INP-01**: Hostname input with validation (alphanumeric, no spaces) ✓ (Phase 2)
+- [x] **INP-02**: Username input with validation (lowercase, alphanumeric) ✓ (Phase 2)
+- [x] **INP-03**: Full name input (free text) ✓ (Phase 2)
+- [x] **INP-04**: Git username input (for commit author) ✓ (Phase 2)
+- [x] **INP-05**: Git email input (for commit author) ✓ (Phase 2)
+- [x] **INP-06**: Timezone selection (region/city list) ✓ (Phase 2)
+- [x] **INP-07**: Keyboard layout selection (common layouts with type-to-filter) ✓ (Phase 2)
+- [x] **INP-08**: Wallpaper directory path (default: ~/Pictures/Wallpapers) ✓ (Phase 2)
+- [x] **INP-09**: Avatar image path (optional, default: none) ✓ (Phase 2)
+- [x] **INP-10**: Screenshot path (default: ~/Pictures/Screenshots) ✓ (Phase 2)
 
 ### Configuration Generation
 
@@ -66,6 +67,17 @@
 - **UX-03**: Step skip options (expert mode)
 - **UX-04**: Configuration reset to defaults
 
+## Traceability Matrix
+
+| Phase | Requirements | Status |
+|-------|--------------|--------|
+| 1 - TUI Foundation | TUI-01 through TUI-08 | 8/8 Complete |
+| 2 - Input Collection | INP-01 through INP-10 | 10/10 Complete |
+| 3 - Config Generation | CFG-01 through CFG-09 | 0/9 Pending |
+| 4 - Execution | EXEC-01 through EXEC-05 | 0/5 Pending |
+
+**Overall Progress:** 18/32 requirements complete (56%)
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -78,49 +90,7 @@
 | Interactive partitioning UI | Use Disko for declarative partitioning |
 | Remote installation via SSH | Defer to nixos-anywhere integration (v2) |
 
-## Traceability
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| TUI-01 | Phase 1 | Pending |
-| TUI-02 | Phase 1 | Pending |
-| TUI-03 | Phase 1 | Pending |
-| TUI-04 | Phase 1 | Pending |
-| TUI-05 | Phase 1 | Pending |
-| TUI-06 | Phase 1 | Pending |
-| TUI-07 | Phase 1 | Pending |
-| TUI-08 | Phase 1 | Pending |
-| INP-01 | Phase 2 | Pending |
-| INP-02 | Phase 2 | Pending |
-| INP-03 | Phase 2 | Pending |
-| INP-04 | Phase 2 | Pending |
-| INP-05 | Phase 2 | Pending |
-| INP-06 | Phase 2 | Pending |
-| INP-07 | Phase 2 | Pending |
-| INP-08 | Phase 2 | Pending |
-| INP-09 | Phase 2 | Pending |
-| INP-10 | Phase 2 | Pending |
-| CFG-01 | Phase 3 | Pending |
-| CFG-02 | Phase 3 | Pending |
-| CFG-03 | Phase 3 | Pending |
-| CFG-04 | Phase 3 | Pending |
-| CFG-05 | Phase 3 | Pending |
-| CFG-06 | Phase 3 | Pending |
-| CFG-07 | Phase 3 | Pending |
-| CFG-08 | Phase 3 | Pending |
-| CFG-09 | Phase 3 | Pending |
-| EXEC-01 | Phase 4 | Pending |
-| EXEC-02 | Phase 4 | Pending |
-| EXEC-03 | Phase 4 | Pending |
-| EXEC-04 | Phase 4 | Pending |
-| EXEC-05 | Phase 4 | Pending |
-
-**Coverage:**
-- v1 requirements: 32 total
-- Mapped to phases: 32
-- Unmapped: 0 ✓
-
 ---
 
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-01-31 after initial definition*
+*Last updated: 2026-01-31 after Phase 2 completion*
