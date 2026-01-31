@@ -7,14 +7,13 @@ use std::path::PathBuf;
 
 use crate::generator::{Generator, GeneratedFile, GeneratorError};
 use crate::generator::context::UserConfig;
-use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
 #[template(path = "flake.nix", escape = "none")]
 struct FlakeContext {
     hostname: String,
     username: String,
-    nixpkgs_ref: String,
+    _nixpkgs_ref: String,
 }
 
 #[derive(Debug)]
@@ -32,7 +31,7 @@ impl Generator for FlakeGenerator {
         let context = FlakeContext {
             hostname: config.hostname.clone(),
             username: config.username.clone(),
-            nixpkgs_ref: "nixos-unstable".to_string(),
+            _nixpkgs_ref: "nixos-unstable".to_string(),
         };
         let content = context.render()?;
         Ok(vec![GeneratedFile {

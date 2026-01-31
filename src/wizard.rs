@@ -1,7 +1,5 @@
-use std::io::Stdout;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
-use std::time::Instant;
 use ratatui::{
     backend::CrosstermBackend,
     widgets::{Block, Borders, List, ListItem, Paragraph},
@@ -14,10 +12,10 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType},
     execute,
 };
-use crate::state::{WizardState, Step, SharedState};
+use crate::state::{WizardState, Step};
 use crate::event::{Event, EventHandler};
 use crate::logo::{LogoAnimation, render_logo};
-use crate::error::{ErrorModal, render_error_modal};
+use crate::error::render_error_modal;
 use crate::generator::{self, UserConfig};
 
 /// Trait for wizard steps - each step implements this
@@ -41,14 +39,12 @@ pub trait WizardStep {
 /// Welcome step - shows animated logo and "Press Enter to begin"
 pub struct WelcomeStep {
     animation: LogoAnimation,
-    start_time: Instant,
 }
 
 impl WelcomeStep {
     pub fn new() -> Self {
         Self {
             animation: LogoAnimation::new(),
-            start_time: Instant::now(),
         }
     }
 }
@@ -58,7 +54,7 @@ impl WizardStep for WelcomeStep {
         "Welcome"
     }
 
-    fn render(&self, frame: &mut Frame, state: &WizardState, area: Rect) {
+    fn render(&self, frame: &mut Frame, _state: &WizardState, area: Rect) {
         // Update animation
         let mut animation = self.animation.clone();
         animation.update();
@@ -564,6 +560,17 @@ impl WizardStep for AccountStep {
                         _ => {}
                     }
                 }
+                crossterm::event::KeyCode::Char('u') if key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
+                    // Clear current field
+                    match self.focus_field {
+                        0 => self.hostname_buffer.clear(),
+                        1 => self.username_buffer.clear(),
+                        2 => self.full_name_buffer.clear(),
+                        3 => self.git_username_buffer.clear(),
+                        4 => self.git_email_buffer.clear(),
+                        _ => {}
+                    }
+                }
                 crossterm::event::KeyCode::Char(c) => {
                     match self.focus_field {
                         0 => self.hostname_buffer.push(c),
@@ -581,17 +588,6 @@ impl WizardStep for AccountStep {
                         2 => { let _ = self.full_name_buffer.pop(); }
                         3 => { let _ = self.git_username_buffer.pop(); }
                         4 => { let _ = self.git_email_buffer.pop(); }
-                        _ => {}
-                    }
-                }
-                crossterm::event::KeyCode::Char('u') if key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
-                    // Clear current field
-                    match self.focus_field {
-                        0 => self.hostname_buffer.clear(),
-                        1 => self.username_buffer.clear(),
-                        2 => self.full_name_buffer.clear(),
-                        3 => self.git_username_buffer.clear(),
-                        4 => self.git_email_buffer.clear(),
                         _ => {}
                     }
                 }
@@ -757,6 +753,15 @@ impl WizardStep for PathsStep {
                         _ => {}
                     }
                 }
+                crossterm::event::KeyCode::Char('u') if key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
+                    // Clear current field
+                    match self.focus_field {
+                        0 => self.wallpaper_buffer.clear(),
+                        1 => self.avatar_buffer.clear(),
+                        2 => self.screenshot_buffer.clear(),
+                        _ => {}
+                    }
+                }
                 crossterm::event::KeyCode::Char(c) => {
                     match self.focus_field {
                         0 => self.wallpaper_buffer.push(c),
@@ -772,15 +777,6 @@ impl WizardStep for PathsStep {
                         2 => { let _ = self.screenshot_buffer.pop(); }
                         _ => {}
                     };
-                }
-                crossterm::event::KeyCode::Char('u') if key.modifiers.contains(crossterm::event::KeyModifiers::CONTROL) => {
-                    // Clear current field
-                    match self.focus_field {
-                        0 => self.wallpaper_buffer.clear(),
-                        1 => self.avatar_buffer.clear(),
-                        2 => self.screenshot_buffer.clear(),
-                        _ => {}
-                    }
                 }
                 _ => {}
             }
@@ -1058,7 +1054,7 @@ impl WizardStep for SummaryStep {
 /// Render the sidebar showing all steps with progress
 pub fn render_sidebar(frame: &mut Frame, state: &WizardState, area: Rect) {
     let steps = Step::all_steps();
-    let current_step = state.current_step();
+    let _current_step = state.current_step();
 
     let items: Vec<ListItem> = steps
         .iter()
@@ -1128,11 +1124,11 @@ pub fn run_wizard() -> Result<(), String> {
                     Constraint::Percentage(30),
                     Constraint::Percentage(70),
                 ])
-                .split(frame.size());
+                .split(frame.area());
 
             let state_guard = state.read().unwrap();
             let current_step = state_guard.current_step();
-            let mut step = create_current_step(current_step);
+            let step = create_current_step(current_step);
 
             // Render sidebar
             render_sidebar(frame, &state_guard, chunks[0]);
@@ -1142,7 +1138,7 @@ pub fn run_wizard() -> Result<(), String> {
 
             // Render error modal if there's an error
             if let Some(ref error_modal) = state_guard.error_mode {
-                render_error_modal(frame, error_modal, frame.size());
+                render_error_modal(frame, error_modal, frame.area());
             }
         }).map_err(|e| e.to_string())?;
 

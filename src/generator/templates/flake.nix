@@ -2,7 +2,7 @@
   description = "{{ hostname }} - NixOS configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/" + "{{ nixpkgs_ref }}";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,6 +23,8 @@
             ./modules/git.nix
             ./modules/locale.nix
             ./modules/noctalia.nix
+            ./modules/niri
+            ./nix.conf
           ];
         };
       };

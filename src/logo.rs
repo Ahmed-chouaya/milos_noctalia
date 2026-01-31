@@ -10,20 +10,16 @@
 
 use std::time::{Duration, Instant};
 use ratatui::{
-    widgets::canvas::{Canvas, Painter},
+    widgets::canvas::Canvas,
     layout::Rect,
     Frame,
-    style::{Style, Color, Modifier},
+    style::{Style, Color},
     text::{Line, Span},
 };
-use ratatui::backend::CrosstermBackend;
-use std::io::Stdout;
 
 /// Color scheme for the logo (Noctalia theme)
-const NEON_GREEN: (u8, u8, u8) = (0x00, 0xFF, 0x65); // Matrix/screen green
 const NEON_GLOW: (u8, u8, u8) = (0x00, 0xFF, 0x65); // Neon green for cursor/letters
 const AMBER_GLOW: (u8, u8, u8) = (0xFF, 0xB0, 0x00); // Amber glow
-const DARK_BG: (u8, u8, u8) = (0x10, 0x10, 0x10);    // Near black
 
 /// Pixel representation
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -37,7 +33,7 @@ pub enum Pixel {
 const LETTER_WIDTH: usize = 6;
 const LETTER_HEIGHT: usize = 7;
 const LETTER_SPACING: usize = 2;
-const TOTAL_WIDTH: usize = (LETTER_WIDTH + LETTER_SPACING) * 5 - LETTER_SPACING;
+const _TOTAL_WIDTH: usize = (LETTER_WIDTH + LETTER_SPACING) * 5 - LETTER_SPACING;
 const TOTAL_HEIGHT: usize = LETTER_HEIGHT;
 
 /// Letter M - 6x7 pixel art

@@ -15,8 +15,6 @@ use ratatui::{
     Frame,
     style::{Style, Color, Modifier},
 };
-use ratatui::backend::CrosstermBackend;
-use std::io::Stdout;
 
 /// Error types that can occur in the wizard
 #[derive(Clone, Debug)]
@@ -56,7 +54,7 @@ pub enum ErrorType {
 impl fmt::Display for ErrorType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ErrorType::InputValidation { field, message, suggestion } => {
+            ErrorType::InputValidation { field: _, message, suggestion } => {
                 write!(f, "{}", message)?;
                 if let Some(suggestion) = suggestion {
                     write!(f, "\nSuggestion: {}", suggestion)?;
@@ -183,7 +181,7 @@ impl ErrorModal {
     }
 
     /// Handle keyboard input in the modal
-    pub fn handle_input(&mut self, key_code: crossterm::event::KeyCode, key_modifiers: crossterm::event::KeyModifiers) -> Option<ErrorAction> {
+    pub fn handle_input(&mut self, key_code: crossterm::event::KeyCode, _key_modifiers: crossterm::event::KeyModifiers) -> Option<ErrorAction> {
         match key_code {
             crossterm::event::KeyCode::Tab => {
                 self.cycle_action();

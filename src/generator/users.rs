@@ -7,7 +7,6 @@ use std::path::PathBuf;
 
 use crate::generator::{Generator, GeneratedFile, GeneratorError};
 use crate::generator::context::UserConfig;
-use crate::generator::validate::validate_no_unsubstituted;
 
 #[derive(Template)]
 #[template(path = "users.nix", escape = "none")]

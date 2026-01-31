@@ -1,4 +1,3 @@
-use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 use crossterm::event::{self, Event as CrosstermEvent, KeyCode, KeyEvent, KeyModifiers};
 use crate::state::{WizardState, SharedState};
