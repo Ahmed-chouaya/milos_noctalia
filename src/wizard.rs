@@ -1,4 +1,5 @@
 use std::io::Stdout;
+use std::time::Instant;
 use ratatui::{
     backend::CrosstermBackend,
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Tabs},
@@ -13,6 +14,7 @@ use crossterm::{
 };
 use crate::state::{WizardState, Step, SharedState, ErrorMode};
 use crate::event::{Event, EventHandler, run_event_loop};
+use crate::logo::{LogoAnimation, render_logo};
 
 /// Trait for wizard steps - each step implements this
 pub trait WizardStep {
@@ -32,8 +34,20 @@ pub trait WizardStep {
     fn is_complete(&self, state: &WizardState) -> bool;
 }
 
-/// Welcome step - shows logo and "Press Enter to begin"
-pub struct WelcomeStep;
+/// Welcome step - shows animated logo and "Press Enter to begin"
+pub struct WelcomeStep {
+    animation: LogoAnimation,
+    start_time: Instant,
+}
+
+impl WelcomeStep {
+    pub fn new() -> Self {
+        Self {
+            animation: LogoAnimation::new(),
+            start_time: Instant::now(),
+        }
+    }
+}
 
 impl WizardStep for WelcomeStep {
     fn title(&self) -> &'static str {
@@ -41,36 +55,39 @@ impl WizardStep for WelcomeStep {
     }
 
     fn render(&self, frame: &mut Frame<CrosstermBackend<Stdout>>, state: &WizardState, area: Rect) {
-        let text = vec![
-            "",
-            "        ██████  ██████  ███    ██ ███████ ██████  ",
-            "       ██      ██    ██ ████   ██ ██      ██   ██ ",
-            "       ██      ██    ██ ██ ██  ██ █████   ██████  ",
-            "       ██      ██    ██ ██  ██ ██ ██      ██   ██ ",
-            "        ██████  ██████  ██   ████ ███████ ██   ██ ",
-            "",
-            "         NixOS TUI Installer",
-            "         ───────────────────",
-            "",
-            "   This installer will guide you through setting up",
-            "   a Neri desktop environment with Noctalia shell.",
-            "",
-            "",
-            "   ▶ Press ENTER to begin",
-        ];
+        // Update animation
+        let mut animation = self.animation.clone();
+        animation.update();
 
-        let paragraph = Paragraph::new(text.join("\n"))
-            .style(Style::default().fg(Color::Green))
-            .block(Block::borders().borders(Borders::NONE));
+        // Render the logo
+        render_logo(frame, area, &animation);
 
-        frame.render_widget(paragraph, area);
+        // If animation is complete, show "Press Enter to begin" below
+        if animation.complete {
+            let prompt = "Press ENTER to begin";
+            let prompt_area = Rect::new(
+                area.x + area.width / 2 - prompt.len() as u16 / 2,
+                area.y + area.height - 3,
+                prompt.len() as u16,
+                1,
+            );
+
+            let paragraph = Paragraph::new(prompt)
+                .style(Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
+                .block(Block::borders().borders(Borders::NONE));
+
+            frame.render_widget(paragraph, prompt_area);
+        }
     }
 
     fn handle_input(&mut self, event: Event, state: &mut WizardState) -> Result<(), String> {
         if let Event::Key(key) = event {
             if key.code == crossterm::event::KeyCode::Enter {
-                state.mark_step_complete();
-                state.go_next()?;
+                // Only proceed if animation is complete
+                if self.animation.complete {
+                    state.mark_step_complete();
+                    state.go_next()?;
+                }
             }
         }
         Ok(())
