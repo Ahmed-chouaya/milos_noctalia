@@ -92,6 +92,14 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 
 **Requirements:** CFG-01, CFG-02, CFG-03, CFG-04, CFG-05, CFG-06, CFG-07, CFG-08, CFG-09
 
+**Plans:**
+- [ ] 03-01-PLAN.md — Generator infrastructure: dependencies, Generator trait, error types, UserConfig
+- [ ] 03-02-PLAN.md — Templates: 7 Askama templates with context structs (flake, users, git, locale, noctalia, niri, nix.conf)
+- [ ] 03-03-PLAN.md — Validation & atomic writing: validate templates, write files safely
+- [ ] 03-04-PLAN.md — Orchestrator: generate_all() entry point for TUI integration
+- [ ] 03-05-PLAN.md — TUI integration: Generate step in wizard flow
+- [ ] 03-06-PLAN.md — Verification: Human checkpoint to verify generated configs
+
 **Success Criteria:**
 
 1. **All placeholders substituted** - Generated flake.nix contains user's hostname, users.nix contains username, git.nix contains credentials, locale.nix contains timezone/keyboard
@@ -133,7 +141,7 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 |----------|--------------|-------|
 | TUI Framework | TUI-01, TUI-02, TUI-03, TUI-04, TUI-05, TUI-06, TUI-07, TUI-08 | Phase 1 |
 | Input Collection | INP-01, INP-02, INP-03, INP-04, INP-05, INP-06, INP-07, INP-08, INP-09, INP-10 | Phase 2 |
-| Configuration Generation | CFG-01, CFG-02, CFG-03, CFG-04, CFG-05, CFG-06, CFG-07, CFG-08, CFG-09 | Phase 3 |
+| Configuration Generation | CFG-01, CFG-02, CFG-03, CFG-04, CFG-05, CFG-06, CFG-07, CFG-08, CFG-09 | Phase 3 (03-02, 03-03, 03-04) |
 | Execution | EXEC-01, EXEC-02, EXEC-03, EXEC-04, EXEC-05 | Phase 4 |
 
 **Coverage:** 32/32 v1 requirements mapped ✓
