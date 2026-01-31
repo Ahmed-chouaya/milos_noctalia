@@ -1274,9 +1274,9 @@ impl WizardStep for ExecutionStep {
                 let text: Vec<String> = vec![
                     format!("Ready to apply configuration to '{}':", hostname),
                     "".to_string(),
-                    "This will:",
-                    "  1. Commit generated configs to git",
-                    "  2. Run nixos-rebuild switch --flake",
+                    "This will:".to_string(),
+                    "  1. Commit generated configs to git".to_string(),
+                    "  2. Run nixos-rebuild switch --flake".to_string(),
                     "".to_string(),
                     "Press ENTER to begin.".to_string(),
                     "Press ESC to go back.".to_string(),

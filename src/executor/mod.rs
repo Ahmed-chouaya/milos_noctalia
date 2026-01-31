@@ -68,6 +68,7 @@ impl CommandOutput {
 ///
 /// * `program` - The path or name of the program to execute
 /// * `args` - Arguments to pass to the program
+/// * `working_dir` - Optional working directory for the command
 ///
 /// # Returns
 ///
@@ -78,15 +79,20 @@ impl CommandOutput {
 /// ```ignore
 /// use executor::run_command;
 ///
-/// let output = run_command("echo", &["Hello, World!"])?;
+/// let output = run_command("echo", &["Hello, World!"], None)?;
 /// assert!(output.success);
 /// ```
-pub fn run_command(program: &str, args: &[&str]) -> Result<CommandOutput, ExecutorError> {
+pub fn run_command(program: &str, args: &[&str], working_dir: Option<&PathBuf>) -> Result<CommandOutput, ExecutorError> {
     let start = Instant::now();
     let command_str = format!("{} {}", program, args.join(" "));
 
     let mut cmd = std::process::Command::new(program);
     cmd.args(args);
+
+    // Set working directory if provided
+    if let Some(dir) = working_dir {
+        cmd.current_dir(dir);
+    }
 
     // Setup pipes for stdout and stderr
     cmd.stdout(std::process::Stdio::piped());
@@ -174,6 +180,7 @@ pub fn run_command(program: &str, args: &[&str]) -> Result<CommandOutput, Execut
 ///
 /// * `program` - The path or name of the program to execute
 /// * `args` - Arguments to pass to the program
+/// * `working_dir` - Optional working directory for the command
 ///
 /// # Returns
 ///
@@ -182,6 +189,7 @@ pub fn run_command(program: &str, args: &[&str]) -> Result<CommandOutput, Execut
 pub fn run_command_streaming(
     program: &str,
     args: &[&str],
+    working_dir: Option<&PathBuf>,
 ) -> Result<(OutputStream, std::thread::JoinHandle<CommandOutput>), ExecutorError> {
     use crate::executor::output::OutputStream;
     use std::sync::mpsc;
@@ -191,6 +199,11 @@ pub fn run_command_streaming(
 
     let mut cmd = std::process::Command::new(program);
     cmd.args(args);
+
+    // Set working directory if provided
+    if let Some(dir) = working_dir {
+        cmd.current_dir(dir);
+    }
 
     // Setup pipes for stdout and stderr
     cmd.stdout(std::process::Stdio::piped());

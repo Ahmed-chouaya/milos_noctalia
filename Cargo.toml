@@ -15,6 +15,7 @@ atomicwrites = "0.4"
 thiserror = "1.0"
 anyhow = "1.0"
 regex = "1"
+chrono = "0.4"
 
 [dev-dependencies]
 tempfile = "3"

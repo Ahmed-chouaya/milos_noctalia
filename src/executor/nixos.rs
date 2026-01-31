@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use crate::executor::{run_command, ExecutorError, OutputLine};
+use crate::executor::{run_command, ExecutorError};
 
 /// Status of a NixOS rebuild operation
 #[derive(Debug, Clone, PartialEq)]
@@ -48,7 +48,7 @@ impl NixOSExecutor {
     
     /// Check if nixos-rebuild is available
     pub fn nixos_rebuild_available() -> bool {
-        run_command("nixos-rebuild", &["--version"]).is_ok()
+        run_command("nixos-rebuild", &["--version"], None).is_ok()
     }
     
     /// Get rebuild command configured for sudo nixos-rebuild switch --flake
@@ -152,7 +152,7 @@ impl NixOSExecutor {
     
     /// Get list of generations before rebuild
     pub fn capture_generations(&self) -> Result<Vec<Generation>, ExecutorError> {
-        let output = run_command("nixos-rebuild", &["list-generations"])?;
+        let output = run_command("nixos-rebuild", &["list-generations"], None)?;
         let mut generations = Vec::new();
         
         for line in output.lines {

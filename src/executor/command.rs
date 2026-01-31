@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 //! Command builders for nixos-rebuild and git operations.
 //!
 //! This module provides convenient builder functions for creating configured
@@ -16,10 +18,10 @@
 /// ```ignore
 /// use executor::command::nixos_rebuild_cmd;
 ///
-/// let mut cmd = nixos_rebuild_cmd(&"/home/user/milos".into());
+/// let mut cmd = nixos_rebuild_cmd("/home/user/milos");
 /// // cmd is now configured as: nixos-rebuild switch --flake /home/user/milos
 /// ```
-pub fn nixos_rebuild_cmd(flake_path: &PathBuf) -> std::process::Command {
+pub fn nixos_rebuild_cmd(flake_path: &Path) -> std::process::Command {
     let mut cmd = std::process::Command::new("nixos-rebuild");
     cmd.arg("switch").arg("--flake").arg(flake_path);
     cmd
