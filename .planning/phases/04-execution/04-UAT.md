@@ -3,24 +3,24 @@ status: testing
 phase: 04-execution
 source: 04-01-SUMMARY.md, 04-02-SUMMARY.md, 04-03-SUMMARY.md, 04-04-SUMMARY.md, 04-05-SUMMARY.md
 started: 2026-01-31T21:30:00Z
-updated: 2026-01-31T21:35:00Z
+updated: 2026-01-31T21:40:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: Git Commit Created
+number: 2
+name: Account Step Works
 expected: |
-  User runs `./milos` from their NixOS config directory (with flake.nix).
-  The script enters nix-shell, builds if needed, and launches the TUI installer.
-  User can navigate through the full wizard flow: Welcome → Account → Timezone → Paths → Summary → Generate → Execution → Completion.
+  User can enter hostname, username, full name, and Git credentials. Input validation works (no spaces in hostname/username). User can navigate with arrow keys, Tab, Enter.
 awaiting: user response
 
 ## Tests
 
 ### 1. Script Launches Installer
 expected: User runs `./milos` from the cloned milos_niri directory. Script auto-detects hostname from /etc/hostname, builds if needed, and launches the TUI installer showing the MILOS logo and Welcome step.
-result: pending
+result: issue
+reported: "Build errors: missing chrono, private exports, wrong run_command signature, PathBuf not imported, string type mismatch"
+severity: blocker
 
 ### 2. Account Step Works
 expected: User can enter hostname, username, full name, and Git credentials. Input validation works (no spaces in hostname/username). User can navigate with arrow keys, Tab, Enter.
@@ -62,10 +62,39 @@ result: pending
 
 total: 10
 passed: 0
-issues: 0
-pending: 10
+issues: 1
+pending: 9
 skipped: 0
 
 ## Gaps
 
-[none yet]
+- truth: "Script builds and launches installer successfully"
+  status: failed
+  reason: "User reported: Build errors - missing chrono, private exports, wrong run_command signature, PathBuf not imported, string type mismatch"
+  severity: blocker
+  test: 1
+  root_cause: "Code executed via Task tool had issues - chrono missing from Cargo.toml, OutputLine and ExecutorError not properly exported, run_command signature missing working_dir parameter, command.rs missing PathBuf import, wizard.rs had &str in Vec<String>"
+  artifacts:
+    - path: "Cargo.toml"
+      issue: "Missing chrono dependency"
+    - path: "src/lib.rs"
+      issue: "OutputLine and ExecutorError not properly exported"
+    - path: "src/executor/mod.rs"
+      issue: "run_command signature missing working_dir parameter"
+    - path: "src/executor/command.rs"
+      issue: "Missing PathBuf import"
+    - path: "src/wizard.rs"
+      issue: "&str in Vec<String>"
+    - path: "src/executor/git.rs"
+      issue: "Using old API, stdout field doesn't exist"
+    - path: "src/executor/nixos.rs"
+      issue: "Using old API, missing working_dir parameter"
+  missing:
+    - "Add chrono to Cargo.toml"
+    - "Export OutputLine and ExecutorError from lib.rs"
+    - "Add working_dir parameter to run_command and run_command_streaming"
+    - "Add PathBuf import to command.rs"
+    - "Add .to_string() to wizard.rs"
+    - "Update git.rs to use new API with stdout_lines()"
+    - "Update nixos.rs to use new API"
+  debug_session: ""
