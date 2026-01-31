@@ -5,6 +5,8 @@
 
 pub mod command;
 pub mod error;
+pub mod git;
+pub mod nixos;
 pub mod output;
 
 use crate::executor::error::ExecutorError;
