@@ -31,6 +31,13 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 
 **Requirements:** TUI-01, TUI-02, TUI-03, TUI-04, TUI-05, TUI-06, TUI-07, TUI-08
 
+**Plans:**
+- [x] 01-01-PLAN.md — Project initialization (TUI-01)
+- [x] 01-02-PLAN.md — Core framework: event loop + state (TUI-02, TUI-03)
+- [x] 01-03-PLAN.md — Navigation & wizard flow (TUI-04)
+- [x] 01-04-PLAN.md — Logo display & animation (TUI-06, TUI-07, TUI-08)
+- [x] 01-05-PLAN.md — Error handling (TUI-05)
+
 **Success Criteria:**
 
 1. **Installer launches with pixel art logo** - User runs `milos-niri` and sees the MILOS logo rendered in the terminal with Noctalia color scheme
@@ -53,6 +60,12 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 - Phase 1 complete (needs TUI framework and state management)
 
 **Requirements:** INP-01, INP-02, INP-03, INP-04, INP-05, INP-06, INP-07, INP-08, INP-09, INP-10
+
+**Plans:**
+- [ ] 02-01-PLAN.md — Account step: hostname, username, full name, git credentials with validation
+- [ ] 02-02-PLAN.md — Timezone & keyboard selection with type-to-filter
+- [ ] 02-03-PLAN.md — Path configuration: wallpaper, avatar, screenshot paths
+- [ ] 02-04-PLAN.md — Polish: sidebar, validation summary, Summary step
 
 **Success Criteria:**
 

@@ -12,10 +12,10 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Phase** | Phase 1: TUI Foundation (5/5 plans complete) |
-| **Next Action** | Plan Phase 2 (`/gsd/plan-phase 2`) |
-| **Status** | 🟢 Phase 1 Complete |
-| **Progress** | [████████████████████████████] 25% |
+| **Phase** | Phase 2: Input Collection (Planning) |
+| **Next Action** | Execute Phase 2 (`/gsd/execute-phase 2`) |
+| **Status** | 🟢 Phase 1 Complete, Planning Phase 2 |
+| **Progress** | [████████████████████░░░░░░] 25% |
 
 ## Performance Metrics
 
@@ -37,6 +37,11 @@
 | Phase 2: Input Collection | Wizard collects all user data | ✓ Approved |
 | Phase 3: Config Generation | Templates substitute collected values | ✓ Approved |
 | Phase 4: Execution | Runs nixos-rebuild with error handling | ✓ Approved |
+| Phase 2 step structure | Welcome → Timezone → Keyboard → Account → Paths → Summary | ✓ Approved |
+| AccountStep fields | hostname, username, full_name, git_username, git_email | ✓ Approved |
+| Type-to-filter UX | Immediate filtering on character input | ✓ Approved |
+| Validation style | Real-time inline (red/green) + summary on submit | ✓ Approved |
+| Sidebar pattern | Review-only, shows ✓/▶/○ markers | ✓ Approved |
 
 ### Research Insights (from SUMMARY.md)
 
@@ -88,14 +93,14 @@
 
 ### What Needs To Happen Next
 
-1. User approves roadmap (or provides feedback for revision)
-2. If approved: Plan Phase 1 using `/gsd/plan-phase 1`
-3. Execute Phase 1, validate success criteria
-4. Proceed to Phase 2, etc.
+1. Execute Phase 2 plans (02-01 through 02-04)
+2. Validate all 10 input requirements work correctly
+3. Proceed to Phase 3 (`/gsd/plan-phase 3`)
+4. Update REQUIREMENTS.md tracebility to mark INP-01 through INP-10 as complete
 
 ### Open Questions
 
-None - roadmap complete and ready for approval.
+None - Phase 2 plans created, ready for execution.
 
 ---
 
