@@ -6,6 +6,7 @@ pub mod event;
 pub mod wizard;
 pub mod logo;
 pub mod error;
+pub mod generator;
 
 // Re-exports for convenience
 pub use state::{WizardState, Step, ErrorMode, SharedState};
