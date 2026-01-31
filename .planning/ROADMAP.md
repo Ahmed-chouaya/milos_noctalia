@@ -93,12 +93,12 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 **Requirements:** CFG-01, CFG-02, CFG-03, CFG-04, CFG-05, CFG-06, CFG-07, CFG-08, CFG-09
 
 **Plans:**
-- [ ] 03-01-PLAN.md — Generator infrastructure: dependencies, Generator trait, error types, UserConfig
-- [ ] 03-02-PLAN.md — Templates: 7 Askama templates with context structs (flake, users, git, locale, noctalia, niri, nix.conf)
-- [ ] 03-03-PLAN.md — Validation & atomic writing: validate templates, write files safely
-- [ ] 03-04-PLAN.md — Orchestrator: generate_all() entry point for TUI integration
-- [ ] 03-05-PLAN.md — TUI integration: Generate step in wizard flow
-- [ ] 03-06-PLAN.md — Verification: Human checkpoint to verify generated configs
+- [x] 03-01-PLAN.md — Generator infrastructure: dependencies, Generator trait, error types, UserConfig
+- [x] 03-02-PLAN.md — Templates: 7 Askama templates with context structs (flake, users, git, locale, noctalia, niri, nix.conf)
+- [x] 03-03-PLAN.md — Validation & atomic writing: validate templates, write files safely
+- [x] 03-04-PLAN.md — Orchestrator: generate_all() entry point for TUI integration
+- [x] 03-05-PLAN.md — TUI integration: Generate step in wizard flow
+- [x] 03-06-PLAN.md — Verification: Human checkpoint to verify generated configs
 
 **Success Criteria:**
 
@@ -120,6 +120,13 @@ A 4-phase roadmap to build an interactive TUI installer that guides users throug
 - Phase 3 complete (needs generated configs to apply)
 
 **Requirements:** EXEC-01, EXEC-02, EXEC-03, EXEC-04, EXEC-05
+
+**Plans:**
+- [ ] 04-01-PLAN.md — Executor infrastructure: command execution with streaming output
+- [ ] 04-02-PLAN.md — Git integration: init, stage, commit generated configs
+- [ ] 04-03-PLAN.md — NixOS rebuild: nixos-rebuild switch --flake execution
+- [ ] 04-04-PLAN.md — Progress UI: real-time output display and error handling
+- [ ] 04-05-PLAN.md — Rollback & completion: failure recovery and success screen
 
 **Success Criteria:**
 
