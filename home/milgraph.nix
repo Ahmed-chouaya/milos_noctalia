@@ -33,4 +33,5 @@
   # Force overwrite existing config files that were created outside Home Manager
   # This prevents activation failures when files already exist
   xdg.configFile."alacritty/alacritty.toml".force = true;
+  xdg.configFile."noctalia/plugins.json".force = true;
 }
