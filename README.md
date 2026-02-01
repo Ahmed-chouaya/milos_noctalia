@@ -260,7 +260,7 @@ The configuration is fully declarative - everything is defined in these files. C
 
 Use it however you like. This is just my personal configuration shared publicly.
 
-## 🙏 Credits
+## 🫡 Credits
 
 - [Niri](https://github.com/YaLTeR/niri) - Scrollable-tiling Wayland compositor
 - [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) - Desktop shell
