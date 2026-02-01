@@ -6,5 +6,5 @@
   ];
 
   # Copy niri configuration files from dotfiles
-  home.file.".config/niri/config.kdl".source = ../../dotfiles/niri/config.kdl;
+  home.file.".config/niri/config.kdl".source = ../dotfiles/niri/config.kdl;
 }
