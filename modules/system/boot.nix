@@ -3,6 +3,7 @@
 {
   # Bootloader configuration
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.consoleMode = "0";  # Use text mode to prevent framebuffer freeze
   boot.loader.efi.canTouchEfiVariables = true;
 
   # HP-specific kernel modules for input devices
