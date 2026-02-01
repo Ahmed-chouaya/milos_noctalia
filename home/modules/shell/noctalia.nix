@@ -7,6 +7,26 @@
 
   programs.noctalia-shell = {
     enable = true;
+    plugins = {
+      sources = [
+        {
+          enabled = true;
+          name = "Noctalia Plugins";
+          url = "https://github.com/noctalia-dev/noctalia-plugins";
+        }
+      ];
+      states = {
+        catwalk.enabled = true;
+        clipper.enabled = true;
+        fancy-audiovisualizer.enabled = true;
+        github-feed.enabled = true;
+        keybind-cheatsheet.enabled = true;
+        mini-docker.enabled = true;
+        privacy-indicator.enabled = true;
+        screen-recorder.enabled = true;
+      };
+      version = 1;
+    };
     settings = {
       settingsVersion = 41;
 
