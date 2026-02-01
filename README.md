@@ -1,650 +1,274 @@
-# NixOS Configuration with Niri Compositor
+# MILOS - My NixOS Configuration
 
-A modular, reproducible NixOS configuration using Flakes and Home Manager, featuring the Niri Wayland compositor.
+<p align="center">
+  <video src="./assets/demo.mp4" width="100%" controls poster="./assets/preview.png"></video>
+  <br>
+  <em>☝️ Watch the demo video above</em>
+</p>
 
-## Table of Contents
+<p align="center">
+  <img src="https://img.shields.io/badge/NixOS-Unstable-5277C3?style=for-the-badge&logo=nixos&logoColor=white" />
+  <img src="https://img.shields.io/badge/Niri-Compositor-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Noctalia-Desktop%20Shell-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Flakes-Enabled-ff69b4?style=for-the-badge" />
+</p>
 
-- [Features](#features)
-- [Quick Reference](#quick-reference)
-- [Installation](#installation)
-- [Structure](#structure)
-- [Configuration](#configuration)
-  - [System Configuration](#system-configuration)
-  - [Desktop Environment](#desktop-environment)
-  - [User Configuration](#user-configuration)
-  - [Dotfiles Structure](#dotfiles-structure)
-- [Detailed Configuration](#detailed-configuration)
-  - [Network & Security](#network--security)
-  - [Shell Configuration](#shell-configuration)
-  - [Desktop Applications](#desktop-applications)
-  - [Development Environment](#development-environment)
-- [Common Customization Tasks](#common-customization-tasks)
-- [Updating](#updating)
-- [Troubleshooting](#troubleshooting)
-- [Maintenance](#maintenance)
-- [License](#license)
-- [Credits](#credits)
+My personal NixOS configuration using [Niri](https://github.com/YaLTeR/niri) as the compositor and [Noctalia](https://github.com/noctalia-dev/noctalia-shell) as the desktop shell.
 
-## Features
+This is a reproducible system configuration managed with NixOS Flakes and Home Manager. Install it on any machine and get the exact same setup instantly.
 
-- **Niri Wayland Compositor** - Modern scrollable-tiling window manager
-- **Home Manager Integration** - Declarative user environment management
-- **Modular Structure** - Clean separation of system, desktop, development, and application modules
-- **PipeWire Audio** - Modern audio server with PulseAudio compatibility
-- **Development Environment** - Pre-configured with Git, Node.js, Docker, and editors
-- **Secure SSH** - Key-based authentication, root login disabled
-- **Firewall Configured** - Development ports and SSH properly secured
+## 📋 Requirements
 
-## Quick Reference
-
-**Rebuild system after changes:**
-```bash
-sudo nixos-rebuild switch --flake .#nixos
-```
-
-**Update all packages:**
-```bash
-nix flake update && sudo nixos-rebuild switch --flake .#nixos
-```
-
-**Rollback to previous configuration:**
-```bash
-sudo nixos-rebuild switch --rollback
-```
-
-**Key Niri shortcuts:**
-- `Super+T` - Terminal
-- `Super+D` - App launcher
-- `Super+Q` - Close window
-- `Super+O` - Overview
-
-## Installation
+### Hardware
+- **CPU:** x86_64 processor (Intel/AMD)
+- **RAM:** 4GB minimum, 8GB recommended
+- **Storage:** 20GB free space
+- **Graphics:** Any GPU with Wayland support
 
 ### Prerequisites
+- NixOS installed with Flakes enabled
+- Internet connection
+- 10-30 minutes for first build
 
-- A NixOS installation with Flakes support
-- Git for cloning this repository
+## 🚀 Installation
 
-### Steps
+### Step 1: Clone & Enter
 
-1. **Clone this repository**
-   ```bash
-   git clone <your-repo-url>
-   cd milos_niri
-   ```
-
-2. **Copy your hardware configuration**
-
-   Your hardware configuration is system-specific and contains disk UUIDs unique to your machine. Generate and copy it:
-
-   ```bash
-   # Generate hardware configuration for your system
-   sudo nixos-generate-config --show-hardware-config > /tmp/hardware-config.nix
-
-   # Copy it to the correct location
-   cp /tmp/hardware-config.nix hosts/nixos/hardware-configuration.nix
-   ```
-
-   **Important:** Do NOT commit `hardware-configuration.nix` to version control if you plan to make this repository public, as it contains system-specific UUIDs.
-
-3. **Customize personal information**
-
-   Update your Git configuration in `home/modules/development/git.nix`:
-   ```nix
-   userName = "YourGitHubUsername";
-   userEmail = "your.email@example.com";
-   ```
-
-   If using a different username, update `modules/system/users.nix`:
-   ```nix
-   users.users.yourusername = {
-     # ...
-   };
-   ```
-   And update the home-manager user path in `flake.nix`:
-   ```nix
-   home-manager.users.yourusername = import ./home/yourusername.nix;
-   ```
-
-4. **Configure SSH keys (if SSH is enabled)**
-
-   Since SSH is configured for key-based authentication only, set up your SSH keys:
-   ```bash
-   # On your client machine, copy your public key to the server
-   ssh-copy-id yourusername@nixos
-
-   # Or manually add your public key to the configuration
-   # Edit modules/system/users.nix and add:
-   # openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAA..." ];
-   ```
-
-5. **Build and activate**
-   ```bash
-   # Build the configuration
-   sudo nixos-rebuild switch --flake .#nixos
-   ```
-
-## Structure
-
-```
-.
-├── flake.nix                    # Main flake configuration
-├── flake.lock                   # Dependency locks
-├── hosts/
-│   └── nixos/
-│       ├── configuration.nix    # Host-specific config
-│       └── hardware-configuration.nix  # Hardware config (not in git)
-├── modules/
-│   ├── system/                  # System-level modules
-│   │   ├── boot.nix
-│   │   ├── locale.nix
-│   │   ├── networking.nix
-│   │   ├── ssh.nix
-│   │   ├── users.nix
-│   │   └── security.nix
-│   ├── desktop/                 # Desktop environment
-│   │   ├── niri.nix
-│   │   ├── wayland.nix
-│   │   ├── audio.nix
-│   │   └── fonts.nix
-│   ├── development/             # Development tools
-│   │   ├── tools.nix
-│   │   ├── editors.nix
-│   │   └── docker.nix
-│   └── applications/            # User applications
-│       ├── browsers.nix
-│       ├── terminals.nix
-│       └── utilities.nix
-└── home/
-    ├── milgraph.nix            # Home Manager entry point
-    ├── modules/
-    │   ├── shell/              # Shell configuration
-    │   ├── desktop/            # Desktop user configs
-    │   └── development/        # Development configs
-    └── dotfiles/               # Dotfile configurations
+```bash
+cd ~
+git clone https://github.com/YOUR_USERNAME/MILOS.git
+cd MILOS
 ```
 
-## Configuration
+### Step 2: Copy Default Templates
 
-### System Configuration
+Copy the default template files and customize them:
 
-System-level configuration is in `modules/system/`:
-- **boot.nix** - Bootloader and kernel settings
-- **networking.nix** - Network and firewall settings (see Network & Security section below)
-- **ssh.nix** - SSH daemon configuration with key-based authentication
-- **users.nix** - User accounts and groups
-- **locale.nix** - Timezone and locale settings
-- **security.nix** - Polkit, seatd, and power management
+```bash
+# Copy the default user configuration
+cp home/default.nix home/yourusername.nix
 
-### Desktop Environment
+# Copy the default system user configuration
+cp modules/system/users.default.nix modules/system/users.nix
 
-Desktop configuration is in `modules/desktop/`:
-- **niri.nix** - Niri compositor settings
-- **wayland.nix** - Wayland and Xwayland support
-- **audio.nix** - PipeWire audio configuration
-- **fonts.nix** - Font packages (JetBrains Mono Nerd Font)
+# Copy the default host configuration
+cp -r hosts/default hosts/yourhostname
 
-### User Configuration
-
-Home Manager configuration is in `home/`:
-- **modules/shell/** - Zsh shell configuration with common aliases
-- **modules/desktop/** - User-level desktop configs (alacritty, fuzzel, GTK, niri)
-- **modules/development/** - Git, Node.js, editor configurations
-
-### Dotfiles Structure
-
-Application-specific configuration files are stored in `home/dotfiles/`:
-
-```
-home/dotfiles/
-├── niri/
-│   ├── config.kdl          # Niri compositor configuration (keybinds, layout, etc.)
-│   └── noctalia.kdl        # Noctalia lock screen integration
-├── fuzzel/
-│   ├── fuzzel.ini          # Fuzzel application launcher config
-│   └── themes/
-│       └── noctalia        # Noctalia color theme for fuzzel
-├── gtk/
-│   ├── gtk-3.0.css         # Custom GTK3 color definitions
-│   └── gtk-4.0.css         # Custom GTK4 color definitions
-├── helix/
-│   └── themes/
-│       └── noctalia.toml   # Helix editor color theme
-└── opencode/
-    └── ...                 # OpenCode configuration
+# Copy the default flake
+cp flake.default.nix flake.nix
 ```
 
-## Detailed Configuration
+### Step 3: Edit the Files
 
-### Network & Security
+Now edit each file you just copied and change the placeholders:
 
-#### Firewall Configuration (`modules/system/networking.nix`)
-
-The firewall is enabled with the following ports open:
-
-**TCP Ports:**
-- Port 22 - SSH access
-- Ports 3000-3999 - Common Node.js development servers (React, Vite, etc.)
-- Ports 8000-8999 - Python/Django/HTTP test servers
-
-**To add Docker ports:**
+**1. Edit `home/yourusername.nix` (Line 22-23):**
 ```nix
-# Edit modules/system/networking.nix
-networking.firewall.allowedTCPPorts = [ 22 8080 9000 ];  # Add your ports here
+username = "yourusername";
+homeDirectory = "/home/yourusername";
 ```
 
-**To add UDP ports:**
+**2. Edit `modules/system/users.nix` (Line 8-10):**
 ```nix
-networking.firewall.allowedUDPPorts = [ 5353 ];  # mDNS, gaming, VoIP, etc.
+users.users.yourusername = {
+  isNormalUser = true;
+  description = "Your Full Name";
 ```
 
-#### SSH Configuration (`modules/system/ssh.nix`)
-
-SSH is configured with security best practices:
-- ✅ Key-based authentication only (no passwords)
-- ✅ Root login disabled
-- ✅ X11 forwarding disabled
-
-**To enable password authentication (less secure):**
+**3. Edit `hosts/yourhostname/configuration.nix` (Line 16):**
 ```nix
-# Edit modules/system/ssh.nix and uncomment:
-services.openssh.settings.PasswordAuthentication = true;
+trusted-users = [ "root" "yourusername" ];
 ```
 
-**To change SSH port:**
-```nix
-# Edit modules/system/ssh.nix
-services.openssh.ports = [ 2222 ];  # Change from default 22
+**4. Edit `flake.nix`:**
+- Change hostname: `default = nixpkgs.lib.nixosSystem` → `yourhostname = nixpkgs.lib.nixosSystem`
+- Update imports: `./hosts/default/` → `./hosts/yourhostname/`
+- Update username: `home-manager.users.yourusername` → match your actual username
+- Update home import: `import ./home/default.nix` → `import ./home/yourusername.nix`
 
-# Also update networking.nix firewall:
-networking.firewall.allowedTCPPorts = [ 2222 ];  # Match the new port
+**5. Edit `home/modules/development/git.nix`:**
+```nix
+userName = "YourGitHubUsername";
+userEmail = "your.email@example.com";
 ```
 
-### Shell Configuration
+### Step 4: Generate Hardware Config
 
-#### Zsh (`home/modules/shell/zsh.nix`)
-
-Pre-configured with common aliases:
-- `ll` → `ls -alh` (detailed list with human-readable sizes)
-- `la` → `ls -A` (list all including hidden files)
-- `l` → `ls -CF` (compact list with indicators)
-- `..` → `cd ..` (go up one directory)
-
-**To add custom aliases:**
-```nix
-# Edit home/modules/shell/zsh.nix
-shellAliases = {
-  ll = "ls -alh";
-  gs = "git status";
-  # Add your aliases here
-};
+```bash
+sudo nixos-generate-config --show-hardware-config > /tmp/hardware.nix
+cp /tmp/hardware.nix hosts/yourhostname/hardware-configuration.nix
 ```
 
-### Desktop Applications
+⚠️ **Don't commit** `hardware-configuration.nix` - it contains system-specific IDs.
 
-#### Niri Compositor (`home/dotfiles/niri/config.kdl`)
+### Step 5: Build
 
-Niri is configured with:
-- Phinger cursors theme
-- Natural scrolling on touchpad
-- Numlock enabled on startup
-- Waybar status bar
-- Noctalia lock screen integration
-- Comprehensive keybindings (Mod = Super/Windows key)
-
-**Key shortcuts:**
-- `Mod+T` - Open terminal (Alacritty)
-- `Mod+D` - Open application launcher (Fuzzel)
-- `Mod+Q` - Close window
-- `Mod+O` - Toggle overview
-- `Mod+Shift+E` - Quit session
-
-**To modify keybindings:**
-Edit `home/dotfiles/niri/config.kdl` and rebuild. The file is extensively commented.
-
-#### Alacritty Terminal (`home/modules/desktop/alacritty.nix`)
-
-Configured with:
-- 95% opacity for transparency
-- 10px padding
-- 11pt font size
-- Block cursor with blinking
-- 10000 lines scrollback history
-
-**To customize:**
-```nix
-# Edit home/modules/desktop/alacritty.nix
-settings = {
-  window.opacity = 1.0;        # Fully opaque
-  font.size = 12.0;            # Larger font
-  # ... other settings
-};
+```bash
+# Replace 'yourhostname' with what you set in flake.nix:
+sudo nixos-rebuild switch --flake .#yourhostname
 ```
 
-#### Fuzzel Launcher (`home/dotfiles/fuzzel/`)
+First build takes 10-30 minutes.
 
-Application launcher with Noctalia color theme integration.
+### Step 6: Enable Desktop
 
-**To customize colors:**
-Edit `home/dotfiles/fuzzel/themes/noctalia` and modify the color values.
-
-#### GTK Theme (`home/modules/desktop/gtk.nix`)
-
-Using Adwaita theme and icons with custom color definitions for consistency with Noctalia color scheme.
-
-**To change theme:**
-```nix
-# Edit home/modules/desktop/gtk.nix
-theme = {
-  name = "Adwaita-dark";         # Use dark variant
-  package = pkgs.gnome-themes-extra;
-};
+```bash
+systemctl --user enable --now noctalia-shell.service
 ```
 
-### Development Environment
+Log out and back in, or reboot.
 
-#### Git Configuration (`home/modules/development/git.nix`)
+## 🎉 First Steps
 
-Pre-configured with:
-- Username: Ahmed-chouaya
-- Email: chouaya.ahmed83@gmail.com
+1. **Log in** - The desktop loads automatically
+2. **Press `Super+O`** - See all windows in overview
+3. **Press `Super+D`** - Open the application launcher
+4. **Open Settings** - Click the icon in top-right corner
+5. **Customize** - Pick a wallpaper or color scheme
 
-**To add Git aliases:**
+## ⌨️ Essential Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Super+T` | Open Terminal |
+| `Super+D` | Open App Launcher |
+| `Super+Q` | Close Window |
+| `Super+O` | Show All Windows |
+| `Super+Tab` | Switch Window |
+| `Super+F` | Fullscreen |
+| `Super+Wheel` | Scroll Through Windows |
+| `Super+1-9` | Switch Workspace |
+
+*Super = Windows/Command key*
+
+## 🎨 Customization
+
+### Change Appearance
+
+1. Open Settings (top-right icon)
+2. Go to "Color Scheme"
+3. Choose a wallpaper or preset
+4. Apps will update to match
+
+### Add Your Own Apps
+
+**System-wide:**
+Edit `modules/applications/utilities.nix`:
 ```nix
-# Edit home/modules/development/git.nix
-aliases = {
-  st = "status";
-  co = "checkout";
-  br = "branch";
-  ci = "commit";
-  # Add your aliases here
-};
-```
-
-**To set default editor:**
-```nix
-extraConfig = {
-  core = {
-    editor = "nvim";  # Or "vim", "code", etc.
-  };
-};
-```
-
-#### Docker
-
-Docker is enabled with the user in the `docker` group for rootless operation.
-
-**Security note:** Being in the docker group grants root-equivalent access. If you don't need Docker, consider removing it from `modules/development/docker.nix`.
-
-### Installed Applications
-
-**Development:**
-- Git, Neovim, VSCode, OpenCode, Claude Code
-- Node.js 24
-- Docker
-
-**Desktop:**
-- Brave browser
-- Alacritty terminal
-- Discord, Thunderbird, Zoom
-- GPU Screen Recorder
-
-**Utilities:**
-- Rofi, Fuzzel (launchers)
-- Swaybg, Mako, Swayidle (Wayland utilities)
-- Waybar (status bar)
-
-## Common Customization Tasks
-
-### Adding a New System Package
-
-```nix
-# Edit the appropriate module (e.g., modules/applications/utilities.nix)
 environment.systemPackages = with pkgs; [
-  # existing packages...
-  your-new-package
+  your-app-here
 ];
 ```
 
-### Adding a New User Package
-
+**Just for your user:**
+Edit `home/yourusername.nix`:
 ```nix
-# Edit home/milgraph.nix
 home.packages = with pkgs; [
-  # existing packages...
-  your-new-package
+  your-app-here
 ];
 ```
 
-### Changing Hostname
-
-```nix
-# Edit modules/system/networking.nix
-networking.hostName = "your-hostname";
+Then rebuild:
+```bash
+sudo nixos-rebuild switch --flake .#yourhostname
 ```
 
-### Enabling Password Authentication for SSH
+### Change Keybindings
 
-```nix
-# Edit modules/system/ssh.nix
-services.openssh.settings.PasswordAuthentication = true;
-```
+Edit `home/dotfiles/niri/config.kdl` and modify the `binds` section.
 
-### Opening Additional Firewall Ports
+## 🔧 Troubleshooting
 
-```nix
-# Edit modules/system/networking.nix
-networking.firewall.allowedTCPPorts = [ 22 8080 9000 ];  # Add your ports
-networking.firewall.allowedUDPPorts = [ 5353 ];          # UDP ports
-```
-
-### Modifying Niri Keybindings
-
-Edit `home/dotfiles/niri/config.kdl` and change the bindings in the `binds` section. The file is extensively commented with examples.
-
-## Updating
-
-### Update All Packages
+### Build Failed?
 
 ```bash
-# Update all flake inputs (nixpkgs, home-manager, niri, noctalia)
-nix flake update
-
-# Rebuild and switch
-sudo nixos-rebuild switch --flake .#nixos
+sudo nixos-rebuild switch --flake .#yourhostname --show-trace
 ```
 
-### Update Specific Input
+### Desktop Not Starting?
 
 ```bash
-# Update only nixpkgs
-nix flake lock --update-input nixpkgs
-
-# Update only home-manager
-nix flake lock --update-input home-manager
-
-# Rebuild after update
-sudo nixos-rebuild switch --flake .#nixos
+systemctl --user status noctalia-shell
+systemctl --user restart noctalia-shell
 ```
 
-### Test Configuration Before Switching
+### Rollback?
 
 ```bash
-# Build without switching (safe to test)
-sudo nixos-rebuild build --flake .#nixos
-
-# If build succeeds, then switch
-sudo nixos-rebuild switch --flake .#nixos
-```
-
-### Rollback to Previous Generation
-
-```bash
-# List available generations
-sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
-
-# Rollback to previous generation
 sudo nixos-rebuild switch --rollback
-
-# Or boot into a specific generation from GRUB/systemd-boot menu
 ```
 
-## Troubleshooting
+## 🗂️ Structure
 
-### Build Errors
-
-Check build logs:
-```bash
-cat build-errors.log
-cat build-result.log
+```
+MILOS/
+├── flake.default.nix      # Template - copy to flake.nix and edit
+├── flake.nix              # Your actual flake (created from template)
+├── hosts/
+│   ├── default/           # Template host config
+│   │   └── configuration.nix
+│   └── yourhostname/      # Your host config (copy from default)
+│       ├── configuration.nix  # EDIT THIS
+│       └── hardware-configuration.nix  # ⚠️ Don't commit
+├── modules/
+│   ├── system/
+│   │   ├── users.default.nix  # Template - copy to users.nix
+│   │   └── users.nix      # Your users config (created from template)
+│   ├── desktop/           # Graphics, audio, fonts
+│   └── applications/      # Apps for everyone
+└── home/
+    ├── default.nix        # Template user config
+    ├── yourusername.nix   # Your user config (copy from default)
+    ├── dotfiles/          # App configs
+    └── modules/
+        └── development/
+            └── git.nix    # EDIT THIS (your git info)
 ```
 
-View detailed Nix build output:
-```bash
-sudo nixos-rebuild switch --flake .#nixos --show-trace
-```
+**Template files to copy and edit:**
+1. ✅ `flake.default.nix` → `flake.nix` (hostname, username, imports)
+2. ✅ `modules/system/users.default.nix` → `modules/system/users.nix` (username, description)
+3. ✅ `home/default.nix` → `home/yourusername.nix` (username, homeDirectory)
+4. ✅ `hosts/default/` → `hosts/yourhostname/` (configuration.nix with username)
+5. ✅ `home/modules/development/git.nix` (git name and email)
 
-### Hardware Configuration Issues
-
-Regenerate hardware configuration:
-```bash
-sudo nixos-generate-config --show-hardware-config > /tmp/hardware-config.nix
-cp /tmp/hardware-config.nix hosts/nixos/hardware-configuration.nix
-```
-
-### Niri Configuration Issues
-
-Test Niri configuration syntax:
-```bash
-niri validate ~/.config/niri/config.kdl
-```
-
-View Niri logs:
-```bash
-journalctl --user -u niri -f
-```
-
-### SSH Connection Issues
-
-Check SSH service status:
-```bash
-sudo systemctl status sshd
-```
-
-Test SSH from localhost:
-```bash
-ssh localhost
-```
-
-View SSH logs:
-```bash
-sudo journalctl -u sshd -f
-```
-
-### Network/Firewall Issues
-
-Check firewall status:
-```bash
-sudo nft list ruleset
-```
-
-Test if port is open:
-```bash
-# From another machine
-nmap -p 22,3000-3999,8000-8999 <your-ip>
-```
-
-### Home Manager Issues
-
-Rebuild only Home Manager:
-```bash
-home-manager switch --flake .#milgraph
-```
-
-Check Home Manager generation:
-```bash
-home-manager generations
-```
-
-### Cleaning Up Old Generations
+## 📝 Daily Commands
 
 ```bash
-# Remove old system generations (keeps last 3)
-sudo nix-collect-garbage --delete-older-than 3d
+# Update everything
+nix flake update && sudo nixos-rebuild switch --flake .#yourhostname
 
-# Optimize nix store
-nix-store --optimize
+# Rebuild after changes
+sudo nixos-rebuild switch --flake .#yourhostname
+
+# Clean up old versions
+sudo nix-collect-garbage --delete-older-than 7d
 ```
 
-## Maintenance
+## 💡 About This Configuration
 
-### Best Practices
+This is my personal NixOS setup that I can install on any machine and get the same environment instantly. It uses:
 
-1. **Test before switching**: Use `sudo nixos-rebuild build --flake .#nixos` to test changes
-2. **Commit often**: Track your configuration changes in git
-3. **Keep hardware-config separate**: Never commit `hosts/nixos/hardware-configuration.nix`
-4. **Update regularly**: Run `nix flake update` monthly to get security patches
-5. **Clean old generations**: Periodically run `sudo nix-collect-garbage --delete-older-than 30d`
+- **NixOS** with Flakes for reproducible system builds
+- **Niri** as the Wayland compositor for scrollable tiling
+- **Noctalia** as the desktop shell providing the bar, widgets, and theming
+- **Home Manager** for declarative user configuration
 
-### Adding New Modules
+The configuration is fully declarative - everything is defined in these files. Change something, rebuild, and the system updates exactly as specified.
 
-Create a new module file:
-```nix
-# modules/system/your-module.nix
-{ config, pkgs, ... }:
+## 📜 License
 
-{
-  # Your configuration here
-}
-```
+Use it however you like. This is just my personal configuration shared publicly.
 
-Add it to `flake.nix`:
-```nix
-modules = [
-  # ... existing modules
-  ./modules/system/your-module.nix
-];
-```
-
-### Git Workflow
-
-```bash
-# After making changes
-git add .
-git commit -m "Description of changes"
-
-# Test the build
-sudo nixos-rebuild build --flake .#nixos
-
-# If successful, rebuild
-sudo nixos-rebuild switch --flake .#nixos
-
-# Push to remote
-git push
-```
-
-### Backup Important Files
-
-Before major changes, backup:
-- Hardware configuration: `hosts/nixos/hardware-configuration.nix`
-- Custom dotfiles in `home/dotfiles/`
-- Any local secrets or keys
-
-### Security Checklist
-
-- [ ] Hardware configuration not in version control
-- [ ] SSH keys configured (not using password auth)
-- [ ] Firewall enabled with only necessary ports
-- [ ] Regular system updates applied
-- [ ] Docker group membership reviewed (if using Docker)
-- [ ] No secrets in Nix configuration files
-
-## License
-
-This configuration is provided as-is for personal use.
-
-## Credits
+## 🙏 Credits
 
 - [Niri](https://github.com/YaLTeR/niri) - Scrollable-tiling Wayland compositor
-- [Home Manager](https://github.com/nix-community/home-manager) - User environment management
-- [Noctalia](https://github.com/noctalia/noctalia) - Lock screen and session management
+- [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell) - Desktop shell
+- [NixOS](https://nixos.org/) - The Linux distribution
+- [Home Manager](https://github.com/nix-community/home-manager) - User environment manager
+
+---
+
+<p align="center">
+  A reproducible NixOS system. Install anywhere, get the same setup.
+</p>
