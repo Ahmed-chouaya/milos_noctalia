@@ -1,1 +1,0 @@
-/home/milgraph/.config/opencode/superpowers/.opencode/plugin/superpowers.js

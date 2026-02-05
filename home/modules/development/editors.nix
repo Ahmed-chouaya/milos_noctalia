@@ -6,8 +6,8 @@
   # as it conflicts with noctalia's ability to write theme files.
 
   # Copy opencode configuration (to be populated in Task 28)
-  home.file.".config/opencode" = {
-    source = ../../dotfiles/opencode;
-    recursive = true;
-  };
+  # home.file.".config/opencode" = {
+  #   source = ../../dotfiles/opencode;
+  #   recursive = true;
+  # };
 }
